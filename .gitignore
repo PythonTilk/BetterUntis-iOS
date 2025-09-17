@@ -91,3 +91,55 @@ iOSInjectionProject/
 
 # macOS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Core Data
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Keychain and sensitive data
+*.keychain
+*.p12
+*.mobileprovision
+
+# Build artifacts
+*.app
+*.framework
+*.a
+*.dylib
+
+# Testing
+*.gcda
+*.gcno
+coverage/
+*.coverage
+
+# Documentation
+docs/build/
+
+# Backup files
+*.orig
+*.backup
