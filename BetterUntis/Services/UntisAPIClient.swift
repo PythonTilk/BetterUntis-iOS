@@ -1356,4 +1356,489 @@ class UntisAPIClient {
             throw NSError(domain: "UntisAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unknown error"])
         }
     }
+
+    // MARK: - BetterUntis Enhanced Methods
+
+    /// Get student absences with enhanced data structure
+    func getStudentAbsencesEnhanced(
+        startDate: Date,
+        endDate: Date,
+        studentId: Int? = nil
+    ) async throws -> [StudentAbsence] {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMdd"
+
+        let params: [String: Any] = [
+            "startDate": dateFormatter.string(from: startDate),
+            "endDate": dateFormatter.string(from: endDate),
+            "studentId": studentId as Any
+        ]
+
+        let methods = [
+            "getStudentAbsences2017",
+            "getStudentAbsences",
+            "getAbsences2017",
+            "getAbsences"
+        ]
+
+        for method in methods {
+            do {
+                let result = try await makeJSONRPCRequest(
+                    method: method,
+                    params: [params]
+                )
+
+                if let absencesData = result["result"] as? [[String: Any]] {
+                    let decoder = JSONDecoder()
+                    decoder.dateDecodingStrategy = .custom { decoder in
+                        let container = try decoder.singleValueContainer()
+                        let dateString = try container.decode(String.self)
+
+                        // Try different date formats
+                        let formatters = [
+                            DateFormatter.untisDateTime,
+                            DateFormatter.untisDate,
+                            ISO8601DateFormatter()
+                        ]
+
+                        for formatter in formatters {
+                            if let formatter = formatter as? DateFormatter,
+                               let date = formatter.date(from: dateString) {
+                                return date
+                            } else if let iso8601 = formatter as? ISO8601DateFormatter,
+                                      let date = iso8601.date(from: dateString) {
+                                return date
+                            }
+                        }
+
+                        throw DecodingError.dataCorruptedError(in: container, debugDescription: "Cannot decode date: \(dateString)")
+                    }
+
+                    return try absencesData.compactMap { absenceDict in
+                        let data = try JSONSerialization.data(withJSONObject: absenceDict)
+                        return try decoder.decode(StudentAbsence.self, from: data)
+                    }
+                }
+                break
+            } catch {
+                if !Self.isMethodNotFoundError(error) {
+                    throw error
+                }
+                continue
+            }
+        }
+
+        print("⚠️ No absence methods supported, returning empty absences")
+        return []
+    }
+
+    /// Create immediate absence entry
+    func createImmediateAbsence(
+        startDate: Date,
+        endDate: Date,
+        reasonId: Int? = nil,
+        text: String? = nil
+    ) async throws -> Bool {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+
+        let params: [String: Any] = [
+            "startDate": dateFormatter.string(from: startDate),
+            "endDate": dateFormatter.string(from: endDate),
+            "reasonId": reasonId as Any,
+            "text": text as Any
+        ]
+
+        let methods = [
+            "createImmediateAbsence2017",
+            "createImmediateAbsence",
+            "createAbsence"
+        ]
+
+        for method in methods {
+            do {
+                let result = try await makeJSONRPCRequest(
+                    method: method,
+                    params: [params]
+                )
+
+                if let success = result["result"] as? Bool {
+                    return success
+                } else if let _ = result["result"] {
+                    // Some servers return the created absence object
+                    return true
+                }
+                break
+            } catch {
+                if !Self.isMethodNotFoundError(error) {
+                    throw error
+                }
+                continue
+            }
+        }
+
+        throw NSError(domain: "UntisAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "Create absence not supported"])
+    }
+
+    /// Delete absence entry
+    func deleteAbsence(absenceId: Int) async throws -> Bool {
+        let params: [String: Any] = [
+            "absenceId": absenceId
+        ]
+
+        let methods = [
+            "deleteAbsence2017",
+            "deleteAbsence",
+            "removeAbsence"
+        ]
+
+        for method in methods {
+            do {
+                let result = try await makeJSONRPCRequest(
+                    method: method,
+                    params: [params]
+                )
+
+                if let success = result["result"] as? Bool {
+                    return success
+                } else if let _ = result["result"] {
+                    return true
+                }
+                break
+            } catch {
+                if !Self.isMethodNotFoundError(error) {
+                    throw error
+                }
+                continue
+            }
+        }
+
+        throw NSError(domain: "UntisAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "Delete absence not supported"])
+    }
+
+    /// Get homework with enhanced data structure
+    func getHomeworkEnhanced(
+        startDate: Date,
+        endDate: Date
+    ) async throws -> [HomeWork] {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMdd"
+
+        let params: [String: Any] = [
+            "startDate": dateFormatter.string(from: startDate),
+            "endDate": dateFormatter.string(from: endDate)
+        ]
+
+        let methods = [
+            "getHomeWork2017",
+            "getHomework2017",
+            "getHomeWork",
+            "getHomework",
+            "getAssignments"
+        ]
+
+        for method in methods {
+            do {
+                let result = try await makeJSONRPCRequest(
+                    method: method,
+                    params: [params]
+                )
+
+                if let homeworkData = result["result"] as? [[String: Any]] {
+                    let decoder = JSONDecoder()
+                    decoder.dateDecodingStrategy = .custom { decoder in
+                        let container = try decoder.singleValueContainer()
+                        let dateString = try container.decode(String.self)
+
+                        let formatters = [
+                            DateFormatter.untisDate,
+                            DateFormatter.untisDateTime,
+                            ISO8601DateFormatter()
+                        ]
+
+                        for formatter in formatters {
+                            if let formatter = formatter as? DateFormatter,
+                               let date = formatter.date(from: dateString) {
+                                return date
+                            } else if let iso8601 = formatter as? ISO8601DateFormatter,
+                                      let date = iso8601.date(from: dateString) {
+                                return date
+                            }
+                        }
+
+                        throw DecodingError.dataCorruptedError(in: container, debugDescription: "Cannot decode date: \(dateString)")
+                    }
+
+                    return try homeworkData.compactMap { homeworkDict in
+                        let data = try JSONSerialization.data(withJSONObject: homeworkDict)
+                        return try decoder.decode(HomeWork.self, from: data)
+                    }
+                }
+                break
+            } catch {
+                if !Self.isMethodNotFoundError(error) {
+                    throw error
+                }
+                continue
+            }
+        }
+
+        print("⚠️ No homework methods supported, returning empty homework")
+        return []
+    }
+
+    /// Get exams with enhanced data structure
+    func getExamsEnhanced(
+        startDate: Date,
+        endDate: Date,
+        studentId: Int? = nil
+    ) async throws -> [EnhancedExam] {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMdd"
+
+        let params: [String: Any] = [
+            "startDate": dateFormatter.string(from: startDate),
+            "endDate": dateFormatter.string(from: endDate),
+            "studentId": studentId as Any
+        ]
+
+        let methods = [
+            "getExams2017",
+            "getExams",
+            "getTests",
+            "getExaminations"
+        ]
+
+        for method in methods {
+            do {
+                let result = try await makeJSONRPCRequest(
+                    method: method,
+                    params: [params]
+                )
+
+                if let examsData = result["result"] as? [[String: Any]] {
+                    let decoder = JSONDecoder()
+                    decoder.dateDecodingStrategy = .custom { decoder in
+                        let container = try decoder.singleValueContainer()
+                        let dateString = try container.decode(String.self)
+
+                        let formatters = [
+                            DateFormatter.untisDate,
+                            DateFormatter.untisDateTime,
+                            ISO8601DateFormatter()
+                        ]
+
+                        for formatter in formatters {
+                            if let formatter = formatter as? DateFormatter,
+                               let date = formatter.date(from: dateString) {
+                                return date
+                            } else if let iso8601 = formatter as? ISO8601DateFormatter,
+                                      let date = iso8601.date(from: dateString) {
+                                return date
+                            }
+                        }
+
+                        throw DecodingError.dataCorruptedError(in: container, debugDescription: "Cannot decode date: \(dateString)")
+                    }
+
+                    return try examsData.compactMap { examDict in
+                        let data = try JSONSerialization.data(withJSONObject: examDict)
+                        return try decoder.decode(EnhancedExam.self, from: data)
+                    }
+                }
+                break
+            } catch {
+                if !Self.isMethodNotFoundError(error) {
+                    throw error
+                }
+                continue
+            }
+        }
+
+        print("⚠️ No exam methods supported, returning empty exams")
+        return []
+    }
+
+    /// Post lesson topic (for student interaction)
+    func postLessonTopic(
+        periodId: Int,
+        topic: String,
+        homework: String? = nil
+    ) async throws -> Bool {
+        let params: [String: Any] = [
+            "periodId": periodId,
+            "topic": topic,
+            "homework": homework as Any
+        ]
+
+        let methods = [
+            "postLessonTopic2017",
+            "postLessonTopic",
+            "submitLessonTopic",
+            "setLessonTopic"
+        ]
+
+        for method in methods {
+            do {
+                let result = try await makeJSONRPCRequest(
+                    method: method,
+                    params: [params]
+                )
+
+                if let success = result["result"] as? Bool {
+                    return success
+                } else if let _ = result["result"] {
+                    return true
+                }
+                break
+            } catch {
+                if !Self.isMethodNotFoundError(error) {
+                    throw error
+                }
+                continue
+            }
+        }
+
+        throw NSError(domain: "UntisAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "Post lesson topic not supported"])
+    }
+
+    /// Mark absences as checked by parent
+    func postAbsencesChecked(absenceIds: [Int]) async throws -> Bool {
+        let params: [String: Any] = [
+            "absenceIds": absenceIds
+        ]
+
+        let methods = [
+            "postAbsencesChecked2017",
+            "postAbsencesChecked",
+            "markAbsencesChecked",
+            "acknowledgeAbsences"
+        ]
+
+        for method in methods {
+            do {
+                let result = try await makeJSONRPCRequest(
+                    method: method,
+                    params: [params]
+                )
+
+                if let success = result["result"] as? Bool {
+                    return success
+                } else if let _ = result["result"] {
+                    return true
+                }
+                break
+            } catch {
+                if !Self.isMethodNotFoundError(error) {
+                    throw error
+                }
+                continue
+            }
+        }
+
+        throw NSError(domain: "UntisAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "Check absences not supported"])
+    }
+
+    /// Get period data with enhanced information
+    func getPeriodDataEnhanced(
+        elementType: Int,
+        elementId: Int,
+        startDate: Date,
+        endDate: Date
+    ) async throws -> [PeriodData] {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMdd"
+
+        let params: [String: Any] = [
+            "elementType": elementType,
+            "elementId": elementId,
+            "startDate": dateFormatter.string(from: startDate),
+            "endDate": dateFormatter.string(from: endDate)
+        ]
+
+        let methods = [
+            "getPeriodData2017",
+            "getPeriodData",
+            "getTimetableDataWithStatus"
+        ]
+
+        for method in methods {
+            do {
+                let result = try await makeJSONRPCRequest(
+                    method: method,
+                    params: [params]
+                )
+
+                if let periodData = result["result"] as? [[String: Any]] {
+                    let decoder = JSONDecoder()
+                    decoder.dateDecodingStrategy = .custom { decoder in
+                        let container = try decoder.singleValueContainer()
+                        let dateString = try container.decode(String.self)
+
+                        let formatters = [
+                            DateFormatter.untisDate,
+                            DateFormatter.untisDateTime,
+                            ISO8601DateFormatter()
+                        ]
+
+                        for formatter in formatters {
+                            if let formatter = formatter as? DateFormatter,
+                               let date = formatter.date(from: dateString) {
+                                return date
+                            } else if let iso8601 = formatter as? ISO8601DateFormatter,
+                                      let date = iso8601.date(from: dateString) {
+                                return date
+                            }
+                        }
+
+                        throw DecodingError.dataCorruptedError(in: container, debugDescription: "Cannot decode date: \(dateString)")
+                    }
+
+                    return try periodData.compactMap { periodDict in
+                        let data = try JSONSerialization.data(withJSONObject: periodDict)
+                        return try decoder.decode(PeriodData.self, from: data)
+                    }
+                }
+                break
+            } catch {
+                if !Self.isMethodNotFoundError(error) {
+                    throw error
+                }
+                continue
+            }
+        }
+
+        print("⚠️ No enhanced period data methods supported, returning empty periods")
+        return []
+    }
+
+    // MARK: - Helper Methods for BetterUntis
+
+    /// Test if BetterUntis enhanced methods are available
+    func testBetterUntisSupport() async -> [String: Bool] {
+        var results: [String: Bool] = [:]
+
+        let testMethods = [
+            "getStudentAbsences2017",
+            "createImmediateAbsence2017",
+            "deleteAbsence2017",
+            "getHomeWork2017",
+            "getExams2017",
+            "postLessonTopic2017",
+            "postAbsencesChecked2017",
+            "getPeriodData2017"
+        ]
+
+        for method in testMethods {
+            do {
+                // Try to call method with minimal params to test availability
+                let _ = try await makeJSONRPCRequest(method: method, params: [[String: Any]()])
+                results[method] = true
+            } catch {
+                results[method] = !Self.isMethodNotFoundError(error)
+            }
+        }
+
+        return results
+    }
 }
