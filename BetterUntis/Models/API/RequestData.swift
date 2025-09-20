@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 
 struct RequestData: Codable, @unchecked Sendable {
     let method: String

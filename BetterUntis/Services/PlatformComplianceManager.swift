@@ -1,6 +1,7 @@
 import Foundation
 import LocalAuthentication
 import UIKit
+import Combine
 
 class PlatformComplianceManager: ObservableObject {
     static let shared = PlatformComplianceManager()

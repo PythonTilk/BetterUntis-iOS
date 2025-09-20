@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 
 struct BaseResponse<T: Codable>: Codable, @unchecked Sendable {
     let jsonrpc: String
