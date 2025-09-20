@@ -1,9 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="1" systemVersion="11A491" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="true" userDefinedModelVersionIdentifier="">
-    <entity name="Item" representedClassName="Item" syncable="YES" codeGenerationType="class">
-        <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22522" systemVersion="23C71" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="PeriodEntity" representedClassName="PeriodEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="backColor" optional="YES" attributeType="String"/>
+        <attribute name="endDateTime" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="foreColor" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="infoText" optional="YES" attributeType="String"/>
+        <attribute name="innerBackColor" optional="YES" attributeType="String"/>
+        <attribute name="innerForeColor" optional="YES" attributeType="String"/>
+        <attribute name="lessonId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="lessonText" optional="YES" attributeType="String"/>
+        <attribute name="startDateTime" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="substitutionText" optional="YES" attributeType="String"/>
+        <attribute name="userId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
     </entity>
-    <elements>
-        <element name="Item" positionX="-63" positionY="-18" width="128" height="44"/>
-    </elements>
+    <entity name="UserEntity" representedClassName="UserEntity" syncable="YES" codeGenerationType="category">
+        <attribute name="anonymous" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="apiHost" optional="NO" attributeType="String"/>
+        <attribute name="created" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="displayName" optional="NO" attributeType="String"/>
+        <attribute name="id" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="masterDataTimestamp" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="profileName" optional="YES" attributeType="String"/>
+        <attribute name="schoolName" optional="NO" attributeType="String"/>
+    </entity>
 </model>

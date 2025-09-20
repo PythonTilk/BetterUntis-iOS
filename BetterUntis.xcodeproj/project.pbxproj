@@ -6,6 +6,16 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		3B14F5E12E7B6AE6005826F9 /* _RopeModule in Frameworks */ = {isa = PBXBuildFile; productRef = 3B14F5E02E7B6AE6005826F9 /* _RopeModule */; };
+		3B14F5E32E7B6AF0005826F9 /* BitCollections in Frameworks */ = {isa = PBXBuildFile; productRef = 3B14F5E22E7B6AF0005826F9 /* BitCollections */; };
+		3B14F5E52E7B6AF0005826F9 /* Collections in Frameworks */ = {isa = PBXBuildFile; productRef = 3B14F5E42E7B6AF0005826F9 /* Collections */; };
+		3B14F5E72E7B6AF0005826F9 /* DequeModule in Frameworks */ = {isa = PBXBuildFile; productRef = 3B14F5E62E7B6AF0005826F9 /* DequeModule */; };
+		3B14F5E92E7B6AF0005826F9 /* HashTreeCollections in Frameworks */ = {isa = PBXBuildFile; productRef = 3B14F5E82E7B6AF0005826F9 /* HashTreeCollections */; };
+		3B14F5EB2E7B6AF0005826F9 /* HeapModule in Frameworks */ = {isa = PBXBuildFile; productRef = 3B14F5EA2E7B6AF0005826F9 /* HeapModule */; };
+		3B14F5ED2E7B6AF0005826F9 /* OrderedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = 3B14F5EC2E7B6AF0005826F9 /* OrderedCollections */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		3B8143082E7B64DE0037CAD2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -22,6 +32,19 @@
 			remoteInfo = BetterUntis;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		3B14F5DF2E7B6AE2005826F9 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		3B8142F32E7B64DB0037CAD2 /* BetterUntis.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BetterUntis.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -65,6 +88,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3B14F5E32E7B6AF0005826F9 /* BitCollections in Frameworks */,
+				3B14F5E12E7B6AE6005826F9 /* _RopeModule in Frameworks */,
+				3B14F5E52E7B6AF0005826F9 /* Collections in Frameworks */,
+				3B14F5E92E7B6AF0005826F9 /* HashTreeCollections in Frameworks */,
+				3B14F5ED2E7B6AF0005826F9 /* OrderedCollections in Frameworks */,
+				3B14F5EB2E7B6AF0005826F9 /* HeapModule in Frameworks */,
+				3B14F5E72E7B6AF0005826F9 /* DequeModule in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,12 +115,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3B14F5D92E7B6AC8005826F9 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		3B8142EA2E7B64DB0037CAD2 = {
 			isa = PBXGroup;
 			children = (
 				3B8142F52E7B64DB0037CAD2 /* BetterUntis */,
 				3B81430A2E7B64DE0037CAD2 /* BetterUntisTests */,
 				3B8143142E7B64DE0037CAD2 /* BetterUntisUITests */,
+				3B14F5D92E7B6AC8005826F9 /* Frameworks */,
 				3B8142F42E7B64DB0037CAD2 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -115,6 +153,7 @@
 				3B8142EF2E7B64DB0037CAD2 /* Sources */,
 				3B8142F02E7B64DB0037CAD2 /* Frameworks */,
 				3B8142F12E7B64DB0037CAD2 /* Resources */,
+				3B14F5DF2E7B6AE2005826F9 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -125,6 +164,13 @@
 			);
 			name = BetterUntis;
 			packageProductDependencies = (
+				3B14F5E02E7B6AE6005826F9 /* _RopeModule */,
+				3B14F5E22E7B6AF0005826F9 /* BitCollections */,
+				3B14F5E42E7B6AF0005826F9 /* Collections */,
+				3B14F5E62E7B6AF0005826F9 /* DequeModule */,
+				3B14F5E82E7B6AF0005826F9 /* HashTreeCollections */,
+				3B14F5EA2E7B6AF0005826F9 /* HeapModule */,
+				3B14F5EC2E7B6AF0005826F9 /* OrderedCollections */,
 			);
 			productName = BetterUntis;
 			productReference = 3B8142F32E7B64DB0037CAD2 /* BetterUntis.app */;
@@ -208,6 +254,9 @@
 			);
 			mainGroup = 3B8142EA2E7B64DB0037CAD2;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				3B14F5D62E7B691F005826F9 /* XCRemoteSwiftPackageReference "swift-collections" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3B8142F42E7B64DB0037CAD2 /* Products */;
 			projectDirPath = "";
@@ -287,6 +336,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = BetterUntis/BetterUntis.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -294,6 +344,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BetterUntis/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -321,6 +372,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = BetterUntis/BetterUntis.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -328,6 +380,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BetterUntis/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -595,6 +648,55 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		3B14F5D62E7B691F005826F9 /* XCRemoteSwiftPackageReference "swift-collections" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-collections.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3B14F5E02E7B6AE6005826F9 /* _RopeModule */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3B14F5D62E7B691F005826F9 /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = _RopeModule;
+		};
+		3B14F5E22E7B6AF0005826F9 /* BitCollections */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3B14F5D62E7B691F005826F9 /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = BitCollections;
+		};
+		3B14F5E42E7B6AF0005826F9 /* Collections */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3B14F5D62E7B691F005826F9 /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = Collections;
+		};
+		3B14F5E62E7B6AF0005826F9 /* DequeModule */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3B14F5D62E7B691F005826F9 /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = DequeModule;
+		};
+		3B14F5E82E7B6AF0005826F9 /* HashTreeCollections */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3B14F5D62E7B691F005826F9 /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = HashTreeCollections;
+		};
+		3B14F5EA2E7B6AF0005826F9 /* HeapModule */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3B14F5D62E7B691F005826F9 /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = HeapModule;
+		};
+		3B14F5EC2E7B6AF0005826F9 /* OrderedCollections */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3B14F5D62E7B691F005826F9 /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = OrderedCollections;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 3B8142EB2E7B64DB0037CAD2 /* Project object */;
 }

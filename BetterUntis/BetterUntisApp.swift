@@ -1,10 +1,3 @@
-//
-//  BetterUntisApp.swift
-//  BetterUntis
-//
-//  Created by Noel Burkhardt on 17.09.25.
-//
-
 import SwiftUI
 import CoreData
 
