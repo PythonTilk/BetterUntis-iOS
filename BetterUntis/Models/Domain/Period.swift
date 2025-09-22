@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 
 struct Period: Codable, Identifiable, Sendable {
     let id: Int64
@@ -13,7 +14,7 @@ struct Period: Codable, Identifiable, Sendable {
     let elements: [PeriodElement]
     let can: [PeriodRight]
     let `is`: [PeriodState]
-    let homeWorks: [HomeWork]?
+    let homeWorks: [PeriodHomeWork]?
     let exam: PeriodExam?
     let isOnlinePeriod: Bool?
     let messengerChannel: MessengerChannel?
@@ -73,7 +74,7 @@ struct PeriodExam: Codable, Equatable, Sendable {
     let text: String?
 }
 
-struct HomeWork: Codable, Equatable, @unchecked Sendable {
+struct PeriodHomeWork: Codable, Equatable, @unchecked Sendable {
     let id: Int64
     let lessonId: Int64
     let date: Date

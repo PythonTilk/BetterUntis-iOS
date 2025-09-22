@@ -1,3 +1,56 @@
+# General project ignores
+.DS_Store
+.AppleDouble
+.LSOverride
+*.swp
+*.swo
+*.orig
+*.rej
+*.tmp
+*.log
+*.lock
+*.bak
+*.swifttmp
+*.xccrashpoint
+*.xcuserstate
+
+# IDE tooling
+.vscode/
+.idea/
+*.code-workspace
+
+# Python helpers
+__pycache__/
+*.py[cod]
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+*.env
+*.secrets.*
+*.pem
+*.cer
+*.p12
+*.key
+*.keystore
+*.mobileprovision
+cookies.txt
+cookies/
+
+# Manual API/testing scripts (often contain live credentials)
+/final_*.swift
+/final_*.py
+/test_*.swift
+/test_*.py
+/examine_timetable.py
+/timetable_response.json
+
+# Database/cache artifacts
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
 # Xcode
 #
 # gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
@@ -89,6 +142,24 @@ fastlane/test_output
 
 iOSInjectionProject/
 
+# Local tooling outputs
+.swiftpm/
+*.xcworkspacedata
+*.xcuserdatad
+*.xcodeproj/xcuserdata/
+
 # Test files with real credentials
-test_real_credentials.swift
-*_real_*.swift
+/test_real_credentials.swift
+/*_real_*.swift
+
+# Binary outputs
+*.zip
+*.tar
+*.tgz
+*.gz
+
+# Xcode previews
+.swiftpm/xcode/package.xcworkspace/xcuserdata/
+apk_analysis/
+.kiro/
+.claude/

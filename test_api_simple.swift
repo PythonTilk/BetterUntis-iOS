@@ -1,9 +1,45 @@
 import Foundation
 
-let server = "https://mese.webuntis.com/WebUntis/jsonrpc.do?school=IT-Schule+Stuttgart"
-let username = "noel.burkhardt"
-let password = "Noel2008"
+private func loadDotenv() {
+    let fileManager = FileManager.default
+    let envFileName = ".env"
+    var searchURL = URL(fileURLWithPath: fileManager.currentDirectoryPath)
 
+    for _ in 0..<10 {
+        let candidate = searchURL.appendingPathComponent(envFileName)
+        if fileManager.fileExists(atPath: candidate.path) {
+            if let contents = try? String(contentsOf: candidate, encoding: .utf8) {
+                for line in contents.split(whereSeparator: { $0.isNewline }) {
+                    let trimmed = line.trimmingCharacters(in: .whitespaces)
+                    if trimmed.isEmpty || trimmed.hasPrefix("#") { continue }
+                    let parts = trimmed.split(separator: "=", maxSplits: 1).map { String($0) }
+                    guard parts.count == 2 else { continue }
+                    let key = parts[0].trimmingCharacters(in: .whitespaces)
+                    let value = parts[1].trimmingCharacters(in: .whitespaces)
+                    setenv(key, value, 1)
+                }
+            }
+            break
+        }
+
+        let parent = searchURL.deletingLastPathComponent()
+        if parent.path == searchURL.path { break }
+        searchURL = parent
+    }
+}
+
+private func requireEnv(_ key: String) -> String {
+    if let value = ProcessInfo.processInfo.environment[key], !value.isEmpty {
+        return value
+    }
+    fatalError("Missing required environment variable '\(key)'. Create a .env file based on .env.example before running this script.")
+}
+
+loadDotenv()
+
+let server = requireEnv("UNTIS_SERVER_URL")
+let username = requireEnv("UNTIS_USERNAME")
+let password = requireEnv("UNTIS_PASSWORD")
 func makeAPICall(method: String, params: [String: Any] = [:]) async {
     let url = URL(string: server)!
     var request = URLRequest(url: url)

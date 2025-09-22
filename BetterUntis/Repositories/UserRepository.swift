@@ -93,15 +93,18 @@ class UserRepository: ObservableObject {
 
             var sessionId: String
             var finalApiUrl: String
+            var personId: Int64?
 
             do {
                 // Try standard endpoint first
                 print("🔄 Attempting authentication with standard endpoint: \(jsonRpcApiUrl)")
-                sessionId = try await apiClient.authenticate(
+                let authResult = try await apiClient.authenticate(
                     apiUrl: jsonRpcApiUrl,
                     user: username,
                     password: password
                 )
+                sessionId = authResult.sessionId
+                personId = authResult.personId
                 print("✅ Authentication successful with standard endpoint")
                 finalApiUrl = jsonRpcApiUrl
             } catch {
@@ -113,11 +116,13 @@ class UserRepository: ObservableObject {
                     let alternativeApiUrl = WebUntisURLParser.buildAlternativeJsonRpcApiUrl(server: server, school: school)
                     print("🔄 Attempting authentication with alternative endpoint: \(alternativeApiUrl)")
 
-                    sessionId = try await apiClient.authenticate(
+                    let authResult = try await apiClient.authenticate(
                         apiUrl: alternativeApiUrl,
                         user: username,
                         password: password
                     )
+                    sessionId = authResult.sessionId
+                    personId = authResult.personId
                     print("✅ Authentication successful with alternative endpoint")
                     finalApiUrl = alternativeApiUrl
                 } else {
@@ -188,13 +193,24 @@ class UserRepository: ObservableObject {
             try saveUser(user)
 
             // Save credentials to keychain
-            if !keychainManager.saveUserCredentials(userId: String(user.id), user: username, key: sessionId) {
+            if !keychainManager.saveUserCredentials(userId: String(user.id), user: username, key: sessionId, personId: personId) {
                 print("Failed to save user credentials to keychain")
             }
 
             // Save additional connection info for servers without getUserData
             UserDefaults.standard.set(finalApiUrl, forKey: "lastWorkingApiUrl_\(user.id)")
             print("💾 Saved working API URL for user \(user.id): \(finalApiUrl)")
+
+            // Initialize REST token for future API calls
+            let restServer = restBaseURL(from: finalApiUrl)
+            let restClient = UntisRESTClient.create(for: restServer, schoolName: school)
+            do {
+                print("🔐 Attempting REST authentication for \(username) on \(restServer)")
+                _ = try await restClient.authenticate(username: username, password: password)
+                print("✅ REST authentication stored for \(username)")
+            } catch {
+                print("⚠️ REST authentication during login failed: \(error.localizedDescription)")
+            }
 
             // Set as current user
             await MainActor.run {
@@ -292,9 +308,35 @@ class UserRepository: ObservableObject {
 
     private func buildJsonRpcApiUrl(apiUrl: String, schoolName: String) -> String {
         var components = URLComponents(string: apiUrl)!
-        components.path += "/jsonrpc_intern.do"
+        components.path += "/jsonrpc.do"
         components.queryItems = [URLQueryItem(name: "school", value: schoolName)]
         return components.url!.absoluteString
+    }
+
+    private func restBaseURL(from apiUrl: String) -> String {
+        var trimmed = apiUrl.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty { return apiUrl }
+        if !trimmed.lowercased().hasPrefix("http") {
+            trimmed = "https://" + trimmed
+        }
+
+        guard var components = URLComponents(string: trimmed) else {
+            return trimmed
+        }
+
+        if components.scheme == nil {
+            components.scheme = "https"
+        }
+
+        // Remove any specific path/query for JSONRPC endpoints
+        components.path = ""
+        components.query = nil
+        components.fragment = nil
+
+        if let url = components.url {
+            return url.absoluteString
+        }
+        return trimmed
     }
 
     // MARK: - User Credentials

@@ -14,6 +14,7 @@
 		3B14F5E92E7B6AF0005826F9 /* HashTreeCollections in Frameworks */ = {isa = PBXBuildFile; productRef = 3B14F5E82E7B6AF0005826F9 /* HashTreeCollections */; };
 		3B14F5EB2E7B6AF0005826F9 /* HeapModule in Frameworks */ = {isa = PBXBuildFile; productRef = 3B14F5EA2E7B6AF0005826F9 /* HeapModule */; };
 		3B14F5ED2E7B6AF0005826F9 /* OrderedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = 3B14F5EC2E7B6AF0005826F9 /* OrderedCollections */; };
+		3BF4E0A52E9F5ABC005826F9 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = 3BF4E0A42E9F5ABC005826F9 /* SwiftSoup */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -95,6 +96,7 @@
 				3B14F5ED2E7B6AF0005826F9 /* OrderedCollections in Frameworks */,
 				3B14F5EB2E7B6AF0005826F9 /* HeapModule in Frameworks */,
 				3B14F5E72E7B6AF0005826F9 /* DequeModule in Frameworks */,
+				3BF4E0A52E9F5ABC005826F9 /* SwiftSoup in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -171,6 +173,7 @@
 				3B14F5E82E7B6AF0005826F9 /* HashTreeCollections */,
 				3B14F5EA2E7B6AF0005826F9 /* HeapModule */,
 				3B14F5EC2E7B6AF0005826F9 /* OrderedCollections */,
+				3BF4E0A42E9F5ABC005826F9 /* SwiftSoup */,
 			);
 			productName = BetterUntis;
 			productReference = 3B8142F32E7B64DB0037CAD2 /* BetterUntis.app */;
@@ -256,6 +259,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				3B14F5D62E7B691F005826F9 /* XCRemoteSwiftPackageReference "swift-collections" */,
+				3BF4E0A22E9F5ABC005826F9 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3B8142F42E7B64DB0037CAD2 /* Products */;
@@ -658,6 +662,14 @@
 				minimumVersion = 1.2.1;
 			};
 		};
+		3BF4E0A22E9F5ABC005826F9 /* XCRemoteSwiftPackageReference "SwiftSoup" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/scinfu/SwiftSoup.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.6.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -695,6 +707,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 3B14F5D62E7B691F005826F9 /* XCRemoteSwiftPackageReference "swift-collections" */;
 			productName = OrderedCollections;
+		};
+		3BF4E0A42E9F5ABC005826F9 /* SwiftSoup */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3BF4E0A22E9F5ABC005826F9 /* XCRemoteSwiftPackageReference "SwiftSoup" */;
+			productName = SwiftSoup;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

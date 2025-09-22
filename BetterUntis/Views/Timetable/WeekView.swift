@@ -466,7 +466,7 @@ extension Color {
         periods: samplePeriods
     )
 
-    return WeekView(
+    WeekView(
         timetable: sampleTimetable,
         currentWeekStartDate: Calendar.current.startOfDay(for: Date())
     )

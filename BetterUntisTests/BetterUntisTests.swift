@@ -14,4 +14,8 @@ struct BetterUntisTests {
         // Write your test here and use APIs like `#expect(...)` to check expected conditions.
     }
 
+    @Test func authTokenMethodUsesCorrectRPCName() {
+        #expect(UntisAPIClient.methodGetAuthToken == "getAuthToken")
+    }
+
 }

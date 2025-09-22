@@ -5,6 +5,7 @@ struct SettingsView: View {
     @AppStorage("isDarkMode") private var isDarkMode = false
     @AppStorage("showNotifications") private var showNotifications = true
     @AppStorage("autoRefresh") private var autoRefresh = true
+    @AppStorage("debugToolsEnabled") private var debugToolsEnabled = false
 
     @State private var showingAccountManagement = false
     @State private var showingAbout = false
@@ -177,10 +178,23 @@ struct SettingsView: View {
                     .foregroundColor(.red)
             }
 
+            Toggle(isOn: $debugToolsEnabled) {
+                Label("Enable Debug Tools", systemImage: "ladybug")
+            }
+
+            if debugToolsEnabled {
+                NavigationLink(destination: DebugView()) {
+                    Label("Debug Console", systemImage: "terminal")
+                }
+            }
+
         } header: {
             Text("Advanced")
         } footer: {
-            Text("Clear cache will remove all offline timetable data. You may need to refresh your timetable after clearing cache.")
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Clear cache will remove all offline timetable data. You may need to refresh your timetable after clearing cache.")
+                Text("Debug tools provide access to internal logs and diagnostics. Leave disabled unless troubleshooting.")
+            }
         }
     }
 

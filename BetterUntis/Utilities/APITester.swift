@@ -26,12 +26,12 @@ class APITester {
         let testServerURL = "https://demo.webuntis.com/WebUntis/jsonrpc.do?school=Demo_HTL"
 
         do {
-            let sessionId = try await apiClient.authenticate(
+            let authResult = try await apiClient.authenticate(
                 apiUrl: testServerURL,
                 user: "demo",
                 password: "demo"
             )
-            print("✅ Authentication successful, sessionId: \(sessionId.prefix(10))...")
+            print("✅ Authentication successful, sessionId: \(authResult.sessionId.prefix(10))...")
         } catch {
             print("❌ Authentication failed: \(error.localizedDescription)")
         }

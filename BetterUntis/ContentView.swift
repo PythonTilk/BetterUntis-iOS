@@ -20,6 +20,8 @@ struct ContentView: View {
 }
 
 struct MainTabView: View {
+    @AppStorage("debugToolsEnabled") private var debugToolsEnabled = false
+
     var body: some View {
         TabView {
             TimetableView()
@@ -45,6 +47,14 @@ struct MainTabView: View {
                     Image(systemName: "gear")
                     Text("Settings")
                 }
+
+            if debugToolsEnabled {
+                DebugView()
+                    .tabItem {
+                        Image(systemName: "ladybug")
+                        Text("Debug")
+                    }
+            }
         }
     }
 }

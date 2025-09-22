@@ -261,7 +261,7 @@ struct HomeworkRowView: View {
                     .foregroundColor(.primary)
                     .strikethrough(homework.completed)
 
-                Text("Due: \(DateFormatter.shortDate.string(from: homework.dueDate))")
+                Text("Due: \(DateFormatter.shortDate.string(from: homework.endDate))")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
 
@@ -469,31 +469,34 @@ class InfoCenterRepository: ObservableObject {
         }
 
         let homeworkList = hwDicts.compactMap { dict -> HomeWork? in
-            guard let id = dict["id"] as? Int64,
-                  let lessonId = dict["lessonId"] as? Int64,
+            guard let id = dict["id"] as? Int,
+                  let text = dict["text"] as? String,
                   let dateStr = dict["date"] as? String,
-                  let dueDateStr = dict["dueDate"] as? String,
-                  let text = dict["text"] as? String else { return nil }
+                  let dueDateStr = dict["dueDate"] as? String else { return nil }
 
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyyMMdd"
 
-            guard let date = dateFormatter.date(from: dateStr),
-                  let dueDate = dateFormatter.date(from: dueDateStr) else { return nil }
+            guard let startDate = dateFormatter.date(from: dateStr),
+                  let endDate = dateFormatter.date(from: dueDateStr) else { return nil }
 
             return HomeWork(
                 id: id,
-                lessonId: lessonId,
-                date: date,
-                dueDate: dueDate,
+                lessonId: dict["lessonId"] as? Int,
+                subjectId: dict["subjectId"] as? Int,
+                teacherId: dict["teacherId"] as? Int,
+                startDate: startDate,
+                endDate: endDate,
                 text: text,
                 remark: dict["remark"] as? String,
-                completed: dict["completed"] as? Bool ?? false
+                completed: dict["completed"] as? Bool ?? false,
+                attachments: [],
+                lastUpdate: nil
             )
         }
 
         await MainActor.run {
-            self.homework = homeworkList.sorted { $0.dueDate < $1.dueDate }
+            self.homework = homeworkList.sorted { $0.endDate < $1.endDate }
         }
     }
 
@@ -556,7 +559,7 @@ class InfoCenterRepository: ObservableObject {
                 date: date,
                 startTime: dict["startTime"] as? String,
                 endTime: dict["endTime"] as? String,
-                rooms: nil, // TODO: Parse rooms array
+                rooms: [], // TODO: Parse rooms array
                 text: dict["text"] as? String,
                 examType: dict["examType"] as? String,
                 name: dict["name"] as? String

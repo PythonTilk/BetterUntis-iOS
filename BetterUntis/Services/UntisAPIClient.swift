@@ -1,4 +1,12 @@
 import Foundation
+import CryptoKit
+
+struct JSONRPCAuthenticationResult {
+    let sessionId: String
+    let personId: Int64?
+    let personType: Int?
+    let klasseId: Int64?
+}
 
 class UntisAPIClient {
     // MARK: - Constants
@@ -8,7 +16,7 @@ class UntisAPIClient {
     static let applicationId = "BetterUntis-iOS"
     static let applicationVersion = "1.0.0"
     static let platformIdentifier = "iOS"
-    static let clientName = "BetterUntis for iOS"
+    static let clientName = "MOBILE_APP_NAME"
     static let developerId = "BetterUntis-Platform"
     static let userAgent = "BetterUntis/1.0.0 (iOS; iPhone; Mobile)"
 
@@ -16,9 +24,18 @@ class UntisAPIClient {
     static let methodCreateImmediateAbsence = "createImmediateAbsence2017"
     static let methodDeleteAbsence = "deleteAbsence2017"
     static let methodAuthenticate = "authenticate"
-    static let methodGetAuthToken = "authenticate"
+    static let methodGetAuthToken = "getAuthToken"
     static let methodGetAppSharedSecret = "getAppSharedSecret"
     static let methodAuthenticateWithSecret = "authenticate"
+
+    // Fallback authentication methods for older servers
+    static let methodAuthenticateFallback1 = "login"
+    static let methodAuthenticateFallback2 = "authenticateUser"
+    static let methodAuthenticateFallback3 = "validateUser"
+    static let methodAuthenticateFallback4 = "loginUser"
+    static let methodAuthenticateFallback5 = "userLogin"
+    static let methodAuthenticateFallback6 = "auth"
+    static let methodAuthenticateFallback7 = "signIn"
     static let methodGetCurrentSchoolYear = "getCurrentSchoolYear"
     static let methodGetExams = "getExams2017"
     static let methodGetHomeWork = "getHomeWork2017"
@@ -53,6 +70,15 @@ class UntisAPIClient {
     static let methodGetAbsencesFallback1 = "getStudentAbsences"
     static let methodGetAbsencesFallback2 = "getAbsences"
 
+    // MARK: - Instance Properties
+    private var sessionKey: String?
+    private var sessionCookie: HTTPCookie?
+    private var baseURL: String?
+
+    var isAuthenticated: Bool {
+        return sessionKey != nil && sessionCookie != nil
+    }
+
     // MARK: - Utility Methods
 
     /// Checks if an error is a "method not found" error
@@ -77,11 +103,70 @@ class UntisAPIClient {
         apiUrl: String,
         user: String,
         password: String,
-        client: String = "BetterUntis"
-    ) async throws -> String {
-        print("🔄 UntisAPIClient.authenticate - URL: \(apiUrl)")
-        print("🔄 UntisAPIClient.authenticate - User: \(user)")
+        client: String? = nil
+    ) async throws -> JSONRPCAuthenticationResult {
+        let clientValue = client ?? UntisAPIClient.clientName
+        // Try different authentication methods in order
+        let authMethods = [
+            Self.methodAuthenticate,
+            Self.methodAuthenticateFallback1,
+            Self.methodAuthenticateFallback2,
+            Self.methodAuthenticateFallback3,
+            Self.methodAuthenticateFallback4,
+            Self.methodAuthenticateFallback5,
+            Self.methodAuthenticateFallback6,
+            Self.methodAuthenticateFallback7
+        ]
 
+        var lastError: Error?
+
+        for (index, method) in authMethods.enumerated() {
+            do {
+                DebugLogger.logAuthAttempt(method: "JSONRPC(\(method))", server: apiUrl, user: user)
+
+                let authResult = try await performAuthentication(
+                    apiUrl: apiUrl,
+                    user: user,
+                    password: password,
+                    client: clientValue,
+                    method: method
+                )
+
+                DebugLogger.logAuthSuccess(method: "JSONRPC(\(method))", user: user)
+                return authResult
+
+            } catch {
+                lastError = error
+
+                // Log the attempt failure
+                DebugLogger.logAuthFailure(method: "JSONRPC(\(method))", user: user, error: error)
+
+                // If this is a method not found error and we have more methods to try, continue
+                if let nsError = error as NSError?, nsError.code == -32601, index < authMethods.count - 1 {
+                    DebugLogger.logInfo("Authentication method '\(method)' not supported, trying next method...")
+                    continue
+                } else {
+                    // For other errors (like wrong credentials), don't try more methods
+                    if let nsError = error as NSError?, nsError.code != -32601 {
+                        throw error
+                    }
+                }
+            }
+        }
+
+        // If we get here, all methods failed
+        let finalError = lastError ?? NSError(domain: "UntisAPI", code: -32601, userInfo: [NSLocalizedDescriptionKey: "All authentication methods failed"])
+        trackError(finalError, context: "All authentication methods failed for \(user) on \(apiUrl)")
+        throw finalError
+    }
+
+    private func performAuthentication(
+        apiUrl: String,
+        user: String,
+        password: String,
+        client: String,
+        method: String
+    ) async throws -> JSONRPCAuthenticationResult {
         let url = URL(string: apiUrl)!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -92,38 +177,182 @@ class UntisAPIClient {
         request.setValue(Self.platformIdentifier, forHTTPHeaderField: "X-Untis-Platform")
         request.setValue(Self.developerId, forHTTPHeaderField: "X-Untis-Developer-ID")
 
-        let requestData = [
-            "id": UUID().uuidString,
-            "method": Self.methodAuthenticate,
-            "params": [
-                "user": user,
-                "password": password,
-                "client": Self.clientName,
-                "applicationId": Self.applicationId,
-                "platformId": Self.platformIdentifier,
-                "version": Self.applicationVersion
-            ],
-            "jsonrpc": "2.0"
-        ] as [String: Any]
+        // Log network request
+        let headers = [
+            "Content-Type": "application/json",
+            "User-Agent": Self.userAgent,
+            "X-Untis-Application-ID": Self.applicationId
+        ]
+        DebugLogger.logNetworkRequest(url: apiUrl, method: "POST", headers: headers)
+
+        // Create different request format based on method
+        var requestData: [String: Any]
+
+        if method == Self.methodAuthenticateFallback1 { // "login"
+            // Some older servers use a simpler login format
+            requestData = [
+                "id": UUID().uuidString,
+                "method": method,
+                "params": [
+                    "user": user,
+                    "password": password,
+                    "client": client
+                ],
+                "jsonrpc": "2.0"
+            ]
+        } else if method == Self.methodAuthenticateFallback2 { // "authenticateUser"
+            // Alternative authentication format
+            requestData = [
+                "id": UUID().uuidString,
+                "method": method,
+                "params": [
+                    "username": user,
+                    "password": password
+                ],
+                "jsonrpc": "2.0"
+            ]
+        } else if method == Self.methodAuthenticateFallback3 { // "validateUser"
+            // Very simple validation format
+            requestData = [
+                "id": UUID().uuidString,
+                "method": method,
+                "params": [user, password],
+                "jsonrpc": "2.0"
+            ]
+        } else if method == Self.methodAuthenticateFallback4 { // "loginUser"
+            // Login user format with minimal params
+            requestData = [
+                "id": UUID().uuidString,
+                "method": method,
+                "params": [
+                    "user": user,
+                    "password": password
+                ],
+                "jsonrpc": "2.0"
+            ]
+        } else if method == Self.methodAuthenticateFallback5 { // "userLogin"
+            // User login format - positional params
+            requestData = [
+                "id": UUID().uuidString,
+                "method": method,
+                "params": [user, password, client],
+                "jsonrpc": "2.0"
+            ]
+        } else if method == Self.methodAuthenticateFallback6 { // "auth"
+            // Minimal auth format
+            requestData = [
+                "id": UUID().uuidString,
+                "method": method,
+                "params": [
+                    "username": user,
+                    "pwd": password
+                ],
+                "jsonrpc": "2.0"
+            ]
+        } else if method == Self.methodAuthenticateFallback7 { // "signIn"
+            // Sign in format - ultra simple
+            requestData = [
+                "id": UUID().uuidString,
+                "method": method,
+                "params": [user, password],
+                "jsonrpc": "2.0"
+            ]
+        } else {
+            // Standard authentication format - simplified to match working curl format
+            requestData = [
+                "id": UUID().uuidString,
+                "method": method,
+                "params": [
+                    "user": user,
+                    "password": password,
+                    "client": client
+                ],
+                "jsonrpc": "2.0"
+            ]
+        }
 
         request.httpBody = try JSONSerialization.data(withJSONObject: requestData)
 
+        let startTime = CFAbsoluteTimeGetCurrent()
         let (data, response) = try await URLSession.shared.data(for: request)
+        let duration = CFAbsoluteTimeGetCurrent() - startTime
 
-        // Debug response
-        if let responseString = String(data: data, encoding: .utf8) {
-            print("Authentication response: \(responseString)")
+        // Log network response
+        if let httpResponse = response as? HTTPURLResponse {
+            DebugLogger.logNetworkResponse(url: apiUrl, statusCode: httpResponse.statusCode, responseSize: data.count, duration: duration)
         }
 
-        if let httpResponse = response as? HTTPURLResponse {
-            print("HTTP Status: \(httpResponse.statusCode)")
+        // Debug response in verbose mode
+        if DebugLogger.isVerboseLoggingEnabled, let responseString = String(data: data, encoding: .utf8) {
+            DebugLogger.logDebug("Authentication response: \(responseString)", context: "API Response")
         }
 
         let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
 
         if let result = json["result"] as? [String: Any],
            let sessionId = result["sessionId"] as? String {
-            return sessionId
+            sessionKey = sessionId
+
+            // Store the base URL for future requests
+            if let urlComponents = URLComponents(string: apiUrl) {
+                var components = urlComponents
+                components.query = nil // Remove query parameters for base URL
+                baseURL = components.url?.absoluteString
+            }
+
+            // Create session cookie for this server
+            if let baseURLString = baseURL,
+               let cookieURL = URL(string: baseURLString) {
+                sessionCookie = HTTPCookie(properties: [
+                    .domain: cookieURL.host ?? "",
+                    .path: "/",
+                    .name: "JSESSIONID",
+                    .value: sessionId,
+                    .secure: "TRUE",
+                    .expires: Date().addingTimeInterval(3600) // 1 hour expiry
+                ])
+            }
+
+            let personId = (result["personId"] as? NSNumber)?.int64Value
+            let personType = result["personType"] as? Int
+            let klasseId = (result["klasseId"] as? NSNumber)?.int64Value
+
+            return JSONRPCAuthenticationResult(
+                sessionId: sessionId,
+                personId: personId,
+                personType: personType,
+                klasseId: klasseId
+            )
+        } else if let result = json["result"] as? String {
+            // Some methods return session ID directly as string
+            sessionKey = result
+
+            // Store the base URL for future requests
+            if let urlComponents = URLComponents(string: apiUrl) {
+                var components = urlComponents
+                components.query = nil // Remove query parameters for base URL
+                baseURL = components.url?.absoluteString
+            }
+
+            // Create session cookie for this server
+            if let baseURLString = baseURL,
+               let cookieURL = URL(string: baseURLString) {
+                sessionCookie = HTTPCookie(properties: [
+                    .domain: cookieURL.host ?? "",
+                    .path: "/",
+                    .name: "JSESSIONID",
+                    .value: result,
+                    .secure: "TRUE",
+                    .expires: Date().addingTimeInterval(3600) // 1 hour expiry
+                ])
+            }
+
+            return JSONRPCAuthenticationResult(
+                sessionId: result,
+                personId: nil,
+                personType: nil,
+                klasseId: nil
+            )
         } else if let error = json["error"] as? [String: Any],
                   let message = error["message"] as? String {
             let code = error["code"] as? Int ?? -1
@@ -143,10 +372,62 @@ class UntisAPIClient {
                 userFriendlyMessage = message
             }
 
-            throw NSError(domain: "UntisAPI", code: code, userInfo: [NSLocalizedDescriptionKey: userFriendlyMessage])
+            let authError = NSError(domain: "UntisAPI", code: code, userInfo: [NSLocalizedDescriptionKey: userFriendlyMessage])
+            throw authError
         } else {
-            throw NSError(domain: "UntisAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unknown authentication error"])
+            let unknownError = NSError(domain: "UntisAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unknown authentication error"])
+            throw unknownError
         }
+    }
+
+    // MARK: - Connection Management
+
+    func testConnection(server: String, schoolName: String) async -> Bool {
+        do {
+            // Handle both complete API URLs and base server URLs
+            let apiUrl: String
+            if server.contains("jsonrpc.do") {
+                // Already a complete API URL
+                apiUrl = server
+            } else {
+                // Build complete API URL
+                apiUrl = "\(server)?school=\(schoolName)"
+            }
+
+            print("🔍 Testing JSONRPC connection to: \(apiUrl)")
+            _ = try await authenticate(apiUrl: apiUrl, user: "test", password: "test")
+            return true
+        } catch {
+            // If we get a specific authentication error (like invalid credentials),
+            // it means the connection is working but credentials are wrong
+            if let nsError = error as NSError?, nsError.code == -8504 {
+                print("✅ Server connection working (invalid test credentials as expected)")
+                return true // Server is reachable and working
+            }
+            // If we get "not authenticated" errors, it means the API is working
+            // but authentication failed (which is expected with test credentials)
+            if let nsError = error as NSError?, nsError.code == -8520 {
+                print("✅ Server connection working (authentication required as expected)")
+                return true // Server is reachable and working
+            }
+            // If ALL authentication methods fail with "method not found",
+            // this server doesn't support JSONRPC at all
+            if let nsError = error as NSError?, nsError.code == -32601 {
+                print("❌ Server doesn't support JSONRPC methods")
+                return false // Server doesn't support JSONRPC
+            }
+            print("❌ Server connection failed: \(error.localizedDescription)")
+            return false // Server is not reachable or not working
+        }
+    }
+
+    func logout() async throws {
+        // Clear the session key and cookie
+        sessionKey = nil
+        sessionCookie = nil
+        baseURL = nil
+        // Note: Most WebUntis servers don't require explicit logout for JSONRPC
+        print("🔓 Logged out from JSONRPC session")
     }
 
     func getAuthToken(apiUrl: String, user: String?, key: String?) async throws -> String {
@@ -401,39 +682,42 @@ class UntisAPIClient {
         key: String?,
         useFullParams: Bool
     ) async throws -> [String: Any] {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyyMMdd"
-
         let url = URL(string: apiUrl)!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        // Android BetterUntis parameter structure - params as array with single object
+        // Add session cookie if available
+        if let sessionCookie = sessionCookie {
+            request.setValue("JSESSIONID=\(sessionCookie.value)", forHTTPHeaderField: "Cookie")
+        }
+
+        let startDateInt = formatDateInt(startDate)
+        let endDateInt = formatDateInt(endDate)
+
         var timetableParams: [String: Any] = [
-            "startDate": dateFormatter.string(from: startDate),
-            "endDate": dateFormatter.string(from: endDate),
-            "auth": [
-                "user": user as Any,
-                "key": key as Any
-            ]
+            "id": id,
+            "type": type.apiValue,
+            "startDate": startDateInt,
+            "endDate": endDateInt
         ]
 
-        // Add additional parameters for 2017 methods (Android format)
         if useFullParams {
-            timetableParams["id"] = id
-            timetableParams["type"] = type.rawValue
             timetableParams["masterDataTimestamp"] = masterDataTimestamp
             timetableParams["timetableTimestamp"] = 0
             timetableParams["timetableTimestamps"] = []
         }
 
-        let requestData = [
+        if let authParams = makeAuthParameters(user: user, key: key) {
+            timetableParams["auth"] = authParams
+        }
+
+        let requestData: [String: Any] = [
             "id": UUID().uuidString,
             "method": method,
-            "params": [timetableParams], // Android uses array format
+            "params": [timetableParams],
             "jsonrpc": "2.0"
-        ] as [String: Any]
+        ]
 
         request.httpBody = try JSONSerialization.data(withJSONObject: requestData)
 
@@ -493,16 +777,21 @@ class UntisAPIClient {
                 request.httpMethod = "POST"
                 request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-                // Minimal parameters - just authentication
+                // Add session cookie if available
+                if let sessionCookie = sessionCookie {
+                    request.setValue("JSESSIONID=\(sessionCookie.value)", forHTTPHeaderField: "Cookie")
+                }
+
+                // Minimal parameters - use auth payload when possible
+                var params: [String: Any] = [:]
+                if let authParams = makeAuthParameters(user: user, key: key) {
+                    params["auth"] = authParams
+                }
+
                 let requestData = [
                     "id": UUID().uuidString,
                     "method": method,
-                    "params": [
-                        "auth": [
-                            "user": user as Any,
-                            "key": key as Any
-                        ]
-                    ],
+                    "params": params,
                     "jsonrpc": "2.0"
                 ] as [String: Any]
 
@@ -555,9 +844,6 @@ class UntisAPIClient {
         user: String?,
         key: String?
     ) async throws -> [String: Any] {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyyMMdd"
-
         let url = URL(string: apiUrl)!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -565,9 +851,9 @@ class UntisAPIClient {
 
         let lessonsParams: [String: Any] = [
             "id": id,
-            "type": type.rawValue,
-            "startDate": dateFormatter.string(from: startDate),
-            "endDate": dateFormatter.string(from: endDate),
+            "type": type.apiValue,
+            "startDate": formatDateInt(startDate),
+            "endDate": formatDateInt(endDate),
             "auth": [
                 "user": user as Any,
                 "key": key as Any
@@ -642,65 +928,182 @@ class UntisAPIClient {
         }
     }
 
+    private func formatDateInt(_ date: Date) -> Int {
+        let calendar = Calendar(identifier: .gregorian)
+        let components = calendar.dateComponents([.year, .month, .day], from: date)
+        let year = components.year ?? 1970
+        let month = components.month ?? 1
+        let day = components.day ?? 1
+        return (year * 10_000) + (month * 100) + day
+    }
+
+    private func makeAuthParameters(user: String?, key: String?) -> [String: Any]? {
+        let timestamp = Int64(Date().timeIntervalSince1970 * 1000)
+        let username = (user?.isEmpty == false) ? user! : "#anonymous#"
+        let otp = generateTotpCode(secret: key, timestamp: timestamp)
+
+        return [
+            "user": username,
+            "otp": otp,
+            "clientTime": timestamp
+        ]
+    }
+
+    private func generateTotpCode(secret: String?, timestamp: Int64) -> Int {
+        guard let secret = secret,
+              !secret.isEmpty,
+              let keyData = base32Decode(secret) else {
+            return 0
+        }
+
+        var counter = timestamp / 30_000
+        var bigEndianCounter = counter.bigEndian
+        let counterData = Data(bytes: &bigEndianCounter, count: MemoryLayout<Int64>.size)
+
+        let symmetricKey = SymmetricKey(data: keyData)
+        let authentication = HMAC<Insecure.SHA1>.authenticationCode(for: counterData, using: symmetricKey)
+        let hash = Data(authentication)
+
+        let offset = Int((hash.last ?? 0) & 0x0F)
+        guard offset + 3 < hash.count else { return 0 }
+
+        let truncatedHash = (
+            (Int(hash[offset]) & 0x7F) << 24 |
+            (Int(hash[offset + 1]) & 0xFF) << 16 |
+            (Int(hash[offset + 2]) & 0xFF) << 8 |
+            (Int(hash[offset + 3]) & 0xFF)
+        )
+
+        return truncatedHash % 1_000_000
+    }
+
+    private func base32Decode(_ string: String) -> Data? {
+        let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
+        var lookup: [Character: UInt8] = [:]
+        for (index, char) in alphabet.enumerated() {
+            lookup[char] = UInt8(index)
+        }
+
+        let cleaned = string.uppercased().filter { !$0.isWhitespace && $0 != "=" }
+        var buffer: UInt32 = 0
+        var bitsLeft: Int = 0
+        var output = Data()
+
+        for char in cleaned {
+            guard let value = lookup[char] else { return nil }
+            buffer = (buffer << 5) | UInt32(value)
+            bitsLeft += 5
+
+            if bitsLeft >= 8 {
+                bitsLeft -= 8
+                let byte = UInt8((buffer >> UInt32(bitsLeft)) & 0xFF)
+                output.append(byte)
+                buffer &= (1 << UInt32(bitsLeft)) - 1
+            }
+        }
+
+        return output
+    }
+
     func searchSchools(query: String) async throws -> [[String: Any]] {
-        // Based on debugging: API expects params as array of JSONObjects
-        // Error shows: "class java.lang.String cannot be cast to class net.minidev.json.JSONObject"
-        // Correct format: params: [{"search": "query"}]
-
-        let searchURL = "https://schoolsearch.webuntis.com/schoolquery2"
-
-        var request = URLRequest(url: URL(string: searchURL)!)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let requestData = [
-            "id": UUID().uuidString,
-            "method": "searchSchools",
-            "params": [
-                ["search": query] // Fixed: Array containing object instead of object directly
-            ],
-            "jsonrpc": "2.0"
-        ] as [String: Any]
-
-        request.httpBody = try JSONSerialization.data(withJSONObject: requestData)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        // Debug: Print raw response
-        if let responseString = String(data: data, encoding: .utf8) {
-            print("School search response: \(responseString)")
+        struct SchoolSearchAttempt {
+            let url: String
+            let method: String
+            let params: Any
+            let transform: (_ json: [String: Any]) -> [[String: Any]]?
         }
 
-        // Check HTTP status
-        if let httpResponse = response as? HTTPURLResponse {
-            guard 200...299 ~= httpResponse.statusCode else {
-                throw NSError(domain: "UntisAPI", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "HTTP Error: \(httpResponse.statusCode)"])
+        let attempts: [SchoolSearchAttempt] = [
+            SchoolSearchAttempt(
+                url: Self.defaultSchoolSearchURL,
+                method: "searchSchool",
+                params: [
+                    [
+                        "search": query,
+                        "maxResults": 50
+                    ]
+                ],
+                transform: { json in
+                    if let result = json["result"] as? [String: Any],
+                       let schools = result["schools"] as? [[String: Any]] {
+                        return schools
+                    }
+                    return nil
+                }
+            ),
+            SchoolSearchAttempt(
+                url: "https://schoolsearch.webuntis.com/schoolquery2",
+                method: "searchSchools",
+                params: [
+                    ["search": query]
+                ],
+                transform: { json in
+                    if let result = json["result"] as? [[String: Any]] {
+                        return result
+                    }
+                    if let result = json["result"] as? [String: Any],
+                       let schools = result["schools"] as? [[String: Any]] {
+                        return schools
+                    }
+                    return nil
+                }
+            )
+        ]
+
+        var lastError: NSError?
+
+        for attempt in attempts {
+            guard let url = URL(string: attempt.url) else { continue }
+
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+            let payload: [String: Any] = [
+                "id": UUID().uuidString,
+                "method": attempt.method,
+                "params": attempt.params,
+                "jsonrpc": "2.0"
+            ]
+
+            do {
+                request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+                let (data, response) = try await URLSession.shared.data(for: request)
+
+                if let httpResponse = response as? HTTPURLResponse,
+                   !(200...299).contains(httpResponse.statusCode) {
+                    throw NSError(domain: "UntisAPI", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "School search HTTP error: \(httpResponse.statusCode)"])
+                }
+
+                let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+
+                if let error = json["error"] as? [String: Any],
+                   let message = error["message"] as? String {
+                    let code = error["code"] as? Int ?? -1
+
+                    if attempt.method == "searchSchool" && code == -6003 {
+                        throw NSError(domain: "UntisAPI", code: code, userInfo: [NSLocalizedDescriptionKey: "Too many matches. Please refine your school name."])
+                    }
+
+                    lastError = NSError(domain: "UntisAPI", code: code, userInfo: [NSLocalizedDescriptionKey: message])
+                    continue
+                }
+
+                if let schools = attempt.transform(json) {
+                    return schools
+                }
+
+            } catch {
+                lastError = error as NSError
+                continue
             }
         }
 
-        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
-
-        if let result = json["result"] as? [String: Any],
-           let schools = result["schools"] as? [[String: Any]] {
-            return schools
-        } else if let result = json["result"] as? [[String: Any]] {
-            // Some APIs return schools directly as array
-            return result
-        } else if let error = json["error"] as? [String: Any],
-                  let message = error["message"] as? String {
-            let code = error["code"] as? Int ?? -1
-
-            // Provide more helpful error messages based on debugging
-            if code == -6001 || message.contains("invalid method") {
-                throw NSError(domain: "UntisAPI", code: code, userInfo: [NSLocalizedDescriptionKey: "School search is currently not available. The API method may have been deprecated."])
-            } else if message.contains("JSONObject") || message.contains("cast") {
-                throw NSError(domain: "UntisAPI", code: code, userInfo: [NSLocalizedDescriptionKey: "School search parameter format error. Please try again."])
-            } else {
-                throw NSError(domain: "UntisAPI", code: code, userInfo: [NSLocalizedDescriptionKey: "School search failed: \(message)"])
-            }
-        } else {
-            throw NSError(domain: "UntisAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "No schools found or invalid response format"])
+        if let error = lastError {
+            throw error
         }
+
+        return []
     }
 
     func getMessagesOfDay(apiUrl: String, date: Date, user: String?, key: String?) async throws -> [[String: Any]] {
@@ -1327,12 +1730,13 @@ class UntisAPIClient {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        let masterDataParams: [String: Any] = [
-            "auth": [
-                "user": user as Any,
-                "key": key as Any
-            ]
-        ]
+        // Add session cookie if available
+        if let sessionCookie = sessionCookie {
+            request.setValue("JSESSIONID=\(sessionCookie.value)", forHTTPHeaderField: "Cookie")
+        }
+
+        // Use session cookie for authentication instead of auth params
+        let masterDataParams: [String: Any] = [:]
 
         let requestData = [
             "id": UUID().uuidString,
@@ -1385,7 +1789,7 @@ class UntisAPIClient {
             do {
                 let result = try await makeJSONRPCRequest(
                     method: method,
-                    params: [params]
+                    params: params
                 )
 
                 if let absencesData = result["result"] as? [[String: Any]] {
@@ -1459,7 +1863,7 @@ class UntisAPIClient {
             do {
                 let result = try await makeJSONRPCRequest(
                     method: method,
-                    params: [params]
+                    params: params
                 )
 
                 if let success = result["result"] as? Bool {
@@ -1496,7 +1900,7 @@ class UntisAPIClient {
             do {
                 let result = try await makeJSONRPCRequest(
                     method: method,
-                    params: [params]
+                    params: params
                 )
 
                 if let success = result["result"] as? Bool {
@@ -1541,7 +1945,7 @@ class UntisAPIClient {
             do {
                 let result = try await makeJSONRPCRequest(
                     method: method,
-                    params: [params]
+                    params: params
                 )
 
                 if let homeworkData = result["result"] as? [[String: Any]] {
@@ -1613,7 +2017,7 @@ class UntisAPIClient {
             do {
                 let result = try await makeJSONRPCRequest(
                     method: method,
-                    params: [params]
+                    params: params
                 )
 
                 if let examsData = result["result"] as? [[String: Any]] {
@@ -1682,7 +2086,7 @@ class UntisAPIClient {
             do {
                 let result = try await makeJSONRPCRequest(
                     method: method,
-                    params: [params]
+                    params: params
                 )
 
                 if let success = result["result"] as? Bool {
@@ -1719,7 +2123,7 @@ class UntisAPIClient {
             do {
                 let result = try await makeJSONRPCRequest(
                     method: method,
-                    params: [params]
+                    params: params
                 )
 
                 if let success = result["result"] as? Bool {
@@ -1766,7 +2170,7 @@ class UntisAPIClient {
             do {
                 let result = try await makeJSONRPCRequest(
                     method: method,
-                    params: [params]
+                    params: params
                 )
 
                 if let periodData = result["result"] as? [[String: Any]] {
@@ -1832,7 +2236,7 @@ class UntisAPIClient {
         for method in testMethods {
             do {
                 // Try to call method with minimal params to test availability
-                let _ = try await makeJSONRPCRequest(method: method, params: [[String: Any]()])
+                let _ = try await makeJSONRPCRequest(method: method, params: [String: Any]())
                 results[method] = true
             } catch {
                 results[method] = !Self.isMethodNotFoundError(error)
@@ -1840,5 +2244,54 @@ class UntisAPIClient {
         }
 
         return results
+    }
+
+    // MARK: - Helper Methods
+
+    /// Helper method to make JSONRPC requests using session cookies
+    private func makeJSONRPCRequest(method: String, params: [String: Any]) async throws -> [String: Any] {
+        guard let sessionCookie = sessionCookie, let baseURL = baseURL else {
+            throw NSError(domain: "UntisAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: "Not authenticated or no session available"])
+        }
+
+        // Construct the full API URL for this request
+        let url = URL(string: baseURL + "/jsonrpc.do")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(Self.userAgent, forHTTPHeaderField: "User-Agent")
+
+        // Add session cookie
+        request.setValue("JSESSIONID=\(sessionCookie.value)", forHTTPHeaderField: "Cookie")
+
+        // Build JSONRPC request
+        let requestData = [
+            "id": UUID().uuidString,
+            "method": method,
+            "params": params,
+            "jsonrpc": "2.0"
+        ] as [String: Any]
+
+        request.httpBody = try JSONSerialization.data(withJSONObject: requestData)
+
+        // Log the request
+        print("🌐 JSONRPC Request: \(method) with \(params.keys.count) parameters")
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        // Log the response
+        if let httpResponse = response as? HTTPURLResponse {
+            print("✅ \(httpResponse.statusCode) \(url) (\(String(format: "%.2f", 0.0))s) [\(data.count) bytes]")
+        }
+
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+
+        if let error = json["error"] as? [String: Any],
+           let message = error["message"] as? String {
+            let code = error["code"] as? Int ?? -1
+            throw NSError(domain: "UntisAPI", code: code, userInfo: [NSLocalizedDescriptionKey: message])
+        }
+
+        return json
     }
 }

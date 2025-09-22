@@ -54,7 +54,7 @@ class URLBuilder {
     static func buildApiUrl(
         apiHost: String,
         schoolName: String,
-        endpoint: APIEndpoint = .jsonrpcIntern
+        endpoint: APIEndpoint = .jsonrpc
     ) throws -> String {
         guard !schoolName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw URLError.missingSchool
@@ -130,24 +130,24 @@ class URLBuilder {
     ) throws -> [String] {
         var urls: [String] = []
 
-        // Primary endpoint
+        // Primary endpoint (public jsonrpc.do)
         do {
             let primaryUrl = try buildApiUrl(
                 apiHost: apiHost,
                 schoolName: schoolName,
-                endpoint: .jsonrpcIntern
+                endpoint: .jsonrpc
             )
             urls.append(primaryUrl)
         } catch {
             print("⚠️ Failed to build primary URL: \(error)")
         }
 
-        // Fallback endpoint
+        // Fallback endpoint (internal jsonrpc_intern.do)
         do {
             let fallbackUrl = try buildApiUrl(
                 apiHost: apiHost,
                 schoolName: schoolName,
-                endpoint: .jsonrpc
+                endpoint: .jsonrpcIntern
             )
             urls.append(fallbackUrl)
         } catch {

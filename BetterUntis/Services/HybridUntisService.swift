@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 
 /// Hybrid service that combines REST API, JSONRPC API, and HTML parsing fallback
 @MainActor
@@ -8,13 +9,18 @@ class HybridUntisService: ObservableObject {
 
     private let restClient: UntisRESTClient
     private let jsonrpcClient: UntisAPIClient
-    // private let htmlParser: WebUntisHTMLParser // Will be added when package is integrated
+    private var htmlParser: WebUntisHTMLParser?
     private let keychain: KeychainManager
 
     @Published var isAuthenticated = false
     @Published var currentAuthMethod: AuthMethod = .none
     @Published var serverCapabilities: ServerCapabilities?
     @Published var lastError: Error?
+
+    // Server details
+    private var serverURL: String = ""
+    private var schoolName: String = ""
+    private var cachedCredentials: (username: String, password: String)?
 
     // Configuration
     @Published var enableRESTAPI = true
@@ -32,10 +38,10 @@ class HybridUntisService: ObservableObject {
     }
 
     struct ServerCapabilities {
-        let supportsRESTAPI: Bool
-        let supportsJSONRPC: Bool
-        let supportedJSONRPCMethods: [String]
-        let supportsHTMLParsing: Bool
+        var supportsRESTAPI: Bool
+        var supportsJSONRPC: Bool
+        var supportedJSONRPCMethods: [String]
+        var supportsHTMLParsing: Bool
         let serverVersion: String?
         let lastChecked: Date
 
@@ -64,6 +70,11 @@ class HybridUntisService: ObservableObject {
     func authenticate(username: String, password: String, serverURL: String, schoolName: String) async throws {
         print("🔐 Starting hybrid authentication...")
 
+        // Store server details for later use
+        self.serverURL = serverURL
+        self.schoolName = schoolName
+        self.cachedCredentials = (username, password)
+
         // Test server capabilities if not cached or outdated
         if serverCapabilities == nil || isCapabilitiesCacheExpired() {
             await testServerCapabilities(serverURL: serverURL, schoolName: schoolName)
@@ -86,12 +97,14 @@ class HybridUntisService: ObservableObject {
 
                 case .jsonrpc:
                     if enableJSONRPC && serverCapabilities?.supportsJSONRPC == true {
-                        let userData = try await jsonrpcClient.authenticate(
-                            username: username,
-                            password: password,
-                            server: serverURL,
-                            schoolName: schoolName
+                        // Use the same URL building logic as capability testing
+                        let fullApiUrl = WebUntisURLParser.buildJsonRpcApiUrl(server: serverURL, school: schoolName)
+                        let authResult = try await jsonrpcClient.authenticate(
+                            apiUrl: fullApiUrl,
+                            user: username,
+                            password: password
                         )
+                        print("✅ JSONRPC session established (id: \(authResult.sessionId.prefix(8)))")
                         isAuthenticated = true
                         currentAuthMethod = .jsonrpc
                         print("✅ Authenticated via JSONRPC")
@@ -100,9 +113,11 @@ class HybridUntisService: ObservableObject {
 
                 case .html:
                     if enableHTMLParsing && serverCapabilities?.supportsHTMLParsing == true {
-                        // HTML parser authentication will be implemented when package is integrated
-                        print("🔄 HTML parsing authentication not yet implemented")
-                        continue
+                        try await ensureHTMLSession(username: username, password: password)
+                        isAuthenticated = true
+                        currentAuthMethod = .html
+                        print("✅ Authenticated via HTML parser fallback")
+                        return
                     }
 
                 case .none:
@@ -115,9 +130,19 @@ class HybridUntisService: ObservableObject {
             }
         }
 
-        // If all methods failed, throw the most relevant error
-        let errorMessage = authErrors.map { "\($0.key.rawValue): \($0.value.localizedDescription)" }.joined(separator: ", ")
-        lastError = NSError(domain: "HybridAuth", code: -1, userInfo: [NSLocalizedDescriptionKey: "All authentication methods failed: \(errorMessage)"])
+        // If all methods failed, provide contextual error message
+        if serverCapabilities?.supportsHTMLParsing == true &&
+           !serverCapabilities!.supportsRESTAPI &&
+           !serverCapabilities!.supportsJSONRPC {
+            let errorMessage = authErrors[.html]?.localizedDescription ?? "HTML authentication failed"
+            lastError = NSError(domain: "HybridAuth", code: -2, userInfo: [
+                NSLocalizedDescriptionKey: errorMessage
+            ])
+        } else {
+            // Standard authentication failure
+            let errorMessage = authErrors.map { "\($0.key.rawValue): \($0.value.localizedDescription)" }.joined(separator: ", ")
+            lastError = NSError(domain: "HybridAuth", code: -1, userInfo: [NSLocalizedDescriptionKey: "All authentication methods failed: \(errorMessage)"])
+        }
         throw lastError!
     }
 
@@ -136,8 +161,7 @@ class HybridUntisService: ObservableObject {
 
         var lastError: Error?
 
-        // Try REST API first if preferred and available
-        if currentAuthMethod == .rest || (preferRESTAPI && restClient.isAuthenticated) {
+        if enableRESTAPI && restClient.isAuthenticated {
             do {
                 let restElementType: RESTElementType
                 switch elementType {
@@ -148,42 +172,68 @@ class HybridUntisService: ObservableObject {
                 case .student: restElementType = .student
                 }
 
-                let response = try await restClient.getTimetable(
-                    elementType: restElementType,
-                    elementId: elementId,
+                let cacheMode: RESTCacheMode = preferRESTAPI ? .onlineOnly : .offlineOnly
+                let response = try await restClient.getTimetableEntries(
+                    resourceType: restElementType,
+                    resourceIds: [elementId],
                     startDate: startDate,
-                    endDate: endDate
+                    endDate: endDate,
+                    cacheMode: cacheMode,
+                    format: 1,
+                    periodTypes: nil,
+                    timetableType: .myTimetable,
+                    layout: .priority
                 )
-                let periods = restClient.convertTimetableToPeriods(response.data.result.elements)
-                print("📅 Retrieved \(periods.count) periods via REST API")
+
+                let periods = restClient.convertTimetableEntriesToPeriods(
+                    response,
+                    resourceType: restElementType,
+                    primaryResourceId: elementId
+                )
+                print("📅 Retrieved \(periods.count) periods via REST timetable entries")
                 return periods
             } catch {
-                print("⚠️ REST timetable failed, falling back to JSONRPC: \(error.localizedDescription)")
+                print("⚠️ REST timetable failed, attempting other fallbacks: \(error.localizedDescription)")
                 lastError = error
             }
         }
 
-        // Fallback to JSONRPC
-        if currentAuthMethod == .jsonrpc || jsonrpcClient.isAuthenticated {
+        if enableJSONRPC && jsonrpcClient.isAuthenticated {
             do {
-                let periods = try await jsonrpcClient.getTimetable(
-                    elementType: elementType.rawValue == "STUDENT" ? 5 : 1, // Convert to JSONRPC type
-                    elementId: elementId,
+                let fullApiUrl = WebUntisURLParser.buildJsonRpcApiUrl(server: serverURL, school: schoolName)
+                let timetableData = try await jsonrpcClient.getTimetable(
+                    apiUrl: fullApiUrl,
+                    id: Int64(elementId),
+                    type: elementType,
                     startDate: startDate,
-                    endDate: endDate
+                    endDate: endDate,
+                    masterDataTimestamp: 0,
+                    user: nil,
+                    key: nil
                 )
-                print("📅 Retrieved \(periods.count) periods via JSONRPC")
-                return periods
+
+                if let periods = TimetableTransformer.fromJSONRPC(timetableData: timetableData) {
+                    print("📅 Retrieved \(periods.count) periods via JSONRPC")
+                    return periods
+                }
+                throw NSError(domain: "HybridService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unable to convert JSONRPC timetable"])
             } catch {
                 print("⚠️ JSONRPC timetable failed, falling back to HTML: \(error.localizedDescription)")
                 lastError = error
             }
         }
 
-        // Final fallback to HTML parsing
-        if enableHTMLParsing && currentAuthMethod == .html {
-            // HTML parser timetable retrieval will be implemented when package is integrated
-            print("🔄 HTML timetable parsing not yet implemented")
+        if enableHTMLParsing {
+            do {
+                let parser = try await ensureHTMLSession()
+                let htmlPeriods = try await parser.parseEnhancedTimetable(startDate: startDate, endDate: endDate)
+                let periods = convertHTMLPeriods(htmlPeriods)
+                print("📅 Retrieved \(periods.count) periods via HTML parser")
+                return periods
+            } catch {
+                print("❌ HTML timetable parsing failed: \(error.localizedDescription)")
+                lastError = error
+            }
         }
 
         throw lastError ?? NSError(domain: "HybridService", code: -1, userInfo: [NSLocalizedDescriptionKey: "All timetable methods failed"])
@@ -196,6 +246,31 @@ class HybridUntisService: ObservableObject {
         }
 
         var lastError: Error?
+
+        if enableRESTAPI && restClient.isAuthenticated {
+            do {
+                let requestPayload = SaaDataRequest(
+                    classId: nil,
+                    dateRange: SaaDateRange(
+                        start: DateFormatter.untisDate.string(from: startDate),
+                        end: DateFormatter.untisDate.string(from: endDate)
+                    ),
+                    dateRangeType: nil,
+                    studentId: nil,
+                    studentGroupId: nil,
+                    excuseStatusType: nil,
+                    filterForMissingLGNotifications: nil
+                )
+
+                let response = try await restClient.getStudentAbsences(request: requestPayload)
+                let absences = convertSaaAbsences(response)
+                print("🏥 Retrieved \(absences.count) absences via REST API")
+                return absences
+            } catch {
+                print("⚠️ REST absences failed, trying other methods: \(error.localizedDescription)")
+                lastError = error
+            }
+        }
 
         // Try enhanced JSONRPC first (most likely to have absence data)
         if currentAuthMethod == .jsonrpc || jsonrpcClient.isAuthenticated {
@@ -212,10 +287,17 @@ class HybridUntisService: ObservableObject {
             }
         }
 
-        // Fallback to HTML parsing (most reliable for absence data)
         if enableHTMLParsing {
-            // HTML parser absence retrieval will be implemented when package is integrated
-            print("🔄 HTML absence parsing not yet implemented")
+            do {
+                let parser = try await ensureHTMLSession()
+                let htmlAbsences = try await parser.parseAbsences()
+                let absences = convertHTMLAbsences(htmlAbsences)
+                print("🏥 Retrieved \(absences.count) absences via HTML parser")
+                return absences
+            } catch {
+                print("❌ HTML absence parsing failed: \(error.localizedDescription)")
+                lastError = error
+            }
         }
 
         throw lastError ?? NSError(domain: "HybridService", code: -1, userInfo: [NSLocalizedDescriptionKey: "All absence methods failed"])
@@ -244,10 +326,17 @@ class HybridUntisService: ObservableObject {
             }
         }
 
-        // Fallback to HTML parsing
         if enableHTMLParsing {
-            // HTML parser homework retrieval will be implemented when package is integrated
-            print("🔄 HTML homework parsing not yet implemented")
+            do {
+                let parser = try await ensureHTMLSession()
+                let htmlHomework = try await parser.parseHomework(startDate: startDate, endDate: endDate)
+                let homework = convertHTMLHomework(htmlHomework)
+                print("📚 Retrieved \(homework.count) homework items via HTML parser")
+                return homework
+            } catch {
+                print("❌ HTML homework parsing failed: \(error.localizedDescription)")
+                lastError = error
+            }
         }
 
         throw lastError ?? NSError(domain: "HybridService", code: -1, userInfo: [NSLocalizedDescriptionKey: "All homework methods failed"])
@@ -276,10 +365,17 @@ class HybridUntisService: ObservableObject {
             }
         }
 
-        // Fallback to HTML parsing
         if enableHTMLParsing {
-            // HTML parser exam retrieval will be implemented when package is integrated
-            print("🔄 HTML exam parsing not yet implemented")
+            do {
+                let parser = try await ensureHTMLSession()
+                let htmlExams = try await parser.parseExams(startDate: startDate, endDate: endDate)
+                let exams = convertHTMLExams(htmlExams)
+                print("📝 Retrieved \(exams.count) exams via HTML parser")
+                return exams
+            } catch {
+                print("❌ HTML exam parsing failed: \(error.localizedDescription)")
+                lastError = error
+            }
         }
 
         throw lastError ?? NSError(domain: "HybridService", code: -1, userInfo: [NSLocalizedDescriptionKey: "All exam methods failed"])
@@ -308,12 +404,16 @@ class HybridUntisService: ObservableObject {
 
         // Test JSONRPC API
         if enableJSONRPC {
-            capabilities.supportsJSONRPC = await jsonrpcClient.testConnection(server: serverURL, schoolName: schoolName)
+            // Build the correct full API URL with the working jsonrpc.do endpoint
+            let fullApiUrl = WebUntisURLParser.buildJsonRpcApiUrl(server: serverURL, school: schoolName)
+            capabilities.supportsJSONRPC = await jsonrpcClient.testConnection(server: fullApiUrl, schoolName: schoolName)
             if capabilities.supportsJSONRPC {
                 // Test enhanced methods if JSONRPC works
                 let supportedMethods = await jsonrpcClient.testBetterUntisSupport()
                 capabilities.supportedJSONRPCMethods = supportedMethods.compactMap { $0.value ? $0.key : nil }
                 print("📡 JSONRPC API support: \(capabilities.supportsJSONRPC) with \(capabilities.supportedJSONRPCMethods.count) enhanced methods")
+            } else {
+                print("📡 JSONRPC API not supported by this server - will use HTML fallback")
             }
         }
 
@@ -359,7 +459,7 @@ class HybridUntisService: ObservableObject {
     private func saveServerCapabilities(for key: String, capabilities: ServerCapabilities) {
         do {
             let data = try JSONEncoder().encode(capabilities)
-            keychain.set(String(data: data, encoding: .utf8) ?? "", for: "capabilities_\(key)")
+            keychain.save(string: String(data: data, encoding: .utf8) ?? "", forKey: "capabilities_\(key)")
             print("💾 Saved server capabilities for \(key)")
         } catch {
             print("❌ Failed to save capabilities: \(error)")
@@ -367,7 +467,7 @@ class HybridUntisService: ObservableObject {
     }
 
     private func loadServerCapabilities(for key: String) {
-        guard let jsonString = keychain.getString(for: "capabilities_\(key)"),
+        guard let jsonString = keychain.loadString(forKey: "capabilities_\(key)"),
               let data = jsonString.data(using: .utf8) else { return }
 
         do {
@@ -380,10 +480,214 @@ class HybridUntisService: ObservableObject {
 
     // MARK: - Utility Methods
 
+    private func ensureHTMLSession(username: String? = nil, password: String? = nil) async throws -> WebUntisHTMLParser {
+        let creds: (String, String)
+        if let user = username, let pass = password {
+            creds = (user, pass)
+        } else if let stored = cachedCredentials {
+            creds = stored
+        } else {
+            throw NSError(domain: "HybridService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Missing credentials for HTML fallback"])
+        }
+
+        guard !serverURL.isEmpty else {
+            throw NSError(domain: "HybridService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Server URL missing for HTML fallback"])
+        }
+
+        if htmlParser == nil {
+            let encodedSchool = schoolName.replacingOccurrences(of: " ", with: "+")
+            htmlParser = WebUntisHTMLParser(serverURL: serverURL, school: encodedSchool)
+        }
+
+        guard let parser = htmlParser else {
+            throw NSError(domain: "HybridService", code: -1, userInfo: [NSLocalizedDescriptionKey: "HTML parser unavailable"])
+        }
+
+        if !parser.isAuthenticated {
+            _ = try await parser.authenticate(username: creds.0, password: creds.1)
+        }
+
+        return parser
+    }
+
+    private func convertHTMLPeriods(_ periods: [HTMLParsedPeriod]) -> [Period] {
+        let calendar = Calendar.current
+        return periods.compactMap { htmlPeriod in
+            let identifier = Int64(abs(htmlPeriod.id.hashValue))
+            let start = TimetableTransformer.combine(date: htmlPeriod.date, time: htmlPeriod.startTime)
+            let end = TimetableTransformer.combine(date: htmlPeriod.date, time: htmlPeriod.endTime)
+
+            let subjectName = htmlPeriod.subject ?? htmlPeriod.subjectCode ?? ""
+            let teacherName = htmlPeriod.teacher ?? htmlPeriod.teacherCode ?? ""
+            let roomName = htmlPeriod.room ?? htmlPeriod.roomCode ?? ""
+
+            var elements = [PeriodElement]()
+            if !teacherName.isEmpty {
+                elements.append(PeriodElement(type: .teacher, id: identifier, name: teacherName, longName: teacherName, displayName: nil, alternateName: nil, backColor: nil, foreColor: nil, canViewTimetable: nil))
+            }
+            if !roomName.isEmpty {
+                elements.append(PeriodElement(type: .room, id: identifier, name: roomName, longName: roomName, displayName: nil, alternateName: nil, backColor: nil, foreColor: nil, canViewTimetable: nil))
+            }
+            if !subjectName.isEmpty {
+                elements.append(PeriodElement(type: .subject, id: identifier, name: subjectName, longName: subjectName, displayName: nil, alternateName: nil, backColor: nil, foreColor: nil, canViewTimetable: nil))
+            }
+
+            var periodStates: [PeriodState] = []
+            switch htmlPeriod.status {
+            case .cancelled: periodStates.append(.cancelled)
+            case .exam: periodStates.append(.exam)
+            case .substituted: periodStates.append(.teacherSubstitution)
+            case .absent: periodStates.append(.irregular)
+            default: break
+            }
+
+            let text = PeriodText(
+                lesson: subjectName.isEmpty ? htmlPeriod.statusText : subjectName,
+                substitution: htmlPeriod.substitutionInfo?.note,
+                info: htmlPeriod.statusText
+            )
+
+            return Period(
+                id: identifier,
+                lessonId: identifier,
+                startDateTime: start,
+                endDateTime: end,
+                foreColor: "#000000",
+                backColor: "#FFFFFF",
+                innerForeColor: "#000000",
+                innerBackColor: "#FFFFFF",
+                text: text,
+                elements: elements,
+                can: [],
+                is: periodStates,
+                homeWorks: nil,
+                exam: nil,
+                isOnlinePeriod: htmlPeriod.hasExam,
+                messengerChannel: nil,
+                onlinePeriodLink: nil,
+                blockHash: nil
+            )
+        }
+    }
+
+    private func convertHTMLAbsences(_ absences: [HTMLParsedAbsence]) -> [StudentAbsence] {
+        return absences.enumerated().map { index, absence in
+            let start = TimetableTransformer.combine(date: absence.startDate, time: absence.startTime) ?? absence.startDate
+            let end = TimetableTransformer.combine(date: absence.endDate, time: absence.endTime) ?? absence.endDate
+            return StudentAbsence(
+                id: index,
+                studentId: 0,
+                klasseId: nil,
+                startDateTime: start,
+                endDateTime: end,
+                excused: absence.isExcused,
+                absenceReason: absence.reason,
+                excuse: nil,
+                studentOfAge: nil,
+                notification: nil,
+                lastUpdate: absence.submittedAt
+            )
+        }
+    }
+
+    private func convertSaaAbsences(_ response: SaaDataResponse) -> [StudentAbsence] {
+        return response.absences.compactMap { record in
+            guard let student = record.student,
+                  let start = parseSaaDate(record.duration.start),
+                  let end = parseSaaDate(record.duration.end) else {
+                return nil
+            }
+
+            let isExcused = record.excuseStatus?.type == .excused
+            let reason = record.excuseText ?? record.text
+            let studentOfAge = record.studentOfAge ?? student.studentOfAge
+
+            return StudentAbsence(
+                id: Int(record.id),
+                studentId: Int(student.id),
+                klasseId: nil,
+                startDateTime: start,
+                endDateTime: end,
+                excused: isExcused,
+                absenceReason: reason,
+                excuse: nil,
+                studentOfAge: studentOfAge,
+                notification: nil,
+                lastUpdate: nil
+            )
+        }
+    }
+
+    private func parseSaaDate(_ dateString: String) -> Date? {
+        if let date = DateFormatter.untisDateTimeMinutes.date(from: dateString) {
+            return date
+        }
+        if let date = DateFormatter.untisDateTime.date(from: dateString) {
+            return date
+        }
+        if let date = DateFormatter.untisDate.date(from: dateString) {
+            return date
+        }
+        return ISO8601DateFormatter().date(from: dateString)
+    }
+
+    private func convertHTMLHomework(_ items: [HTMLParsedHomework]) -> [HomeWork] {
+        return items.enumerated().map { index, item in
+            let attachments = item.attachments.map { attachment in
+                HomeworkAttachment(
+                    id: abs(attachment.id.hashValue) + index * 1000,
+                    name: attachment.name,
+                    url: attachment.url,
+                    fileSize: attachment.fileSize,
+                    mimeType: attachment.mimeType,
+                    uploadDate: nil
+                )
+            }
+
+            return HomeWork(
+                id: index,
+                lessonId: nil,
+                subjectId: nil,
+                teacherId: nil,
+                startDate: item.assignedDate,
+                endDate: item.dueDate,
+                text: item.title,
+                remark: item.description,
+                completed: item.isCompleted,
+                attachments: attachments,
+                lastUpdate: item.completedDate
+            )
+        }
+    }
+
+    private func convertHTMLExams(_ exams: [HTMLParsedExam]) -> [EnhancedExam] {
+        return exams.enumerated().map { index, exam in
+            let generatedId = abs(exam.id.hashValue) + index * 100
+            return EnhancedExam(
+                id: generatedId,
+                subjectId: 0,
+                teacherId: nil,
+                klasseId: nil,
+                date: exam.date,
+                startTime: exam.startTime,
+                endTime: exam.endTime,
+                examType: exam.examType,
+                text: exam.description,
+                remark: nil,
+                lastUpdate: nil
+            )
+        }
+    }
+
     /// Clear all authentication and reset state
-    func logout() {
+    func logout() async {
         restClient.clearToken()
-        jsonrpcClient.logout()
+        try? await jsonrpcClient.logout()
+        if let parser = htmlParser {
+            try? await parser.logout()
+        }
+        htmlParser = nil
+        cachedCredentials = nil
         isAuthenticated = false
         currentAuthMethod = .none
         lastError = nil
@@ -415,5 +719,225 @@ extension HybridUntisService {
     /// Create configured instance for a WebUntis server
     static func create(for serverURL: String, schoolName: String) -> HybridUntisService {
         return HybridUntisService(baseURL: serverURL, schoolName: schoolName)
+    }
+}
+
+private enum TimetableTransformer {
+    static func fromJSONRPC(timetableData: [String: Any]) -> [Period]? {
+        guard let periodDicts = extractPeriodArray(from: timetableData), !periodDicts.isEmpty else {
+            return nil
+        }
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMdd"
+
+        var periods: [Period] = []
+        for (index, entry) in periodDicts.enumerated() {
+            if let period = buildPeriod(from: entry, index: index, formatter: dateFormatter) {
+                periods.append(period)
+            }
+        }
+
+        return periods
+    }
+
+    private static func extractPeriodArray(from data: [String: Any]) -> [[String: Any]]? {
+        if let result = data["result"] as? [[String: Any]] {
+            return result
+        }
+
+        if let resultDict = data["result"] as? [String: Any] {
+            if let timetable = resultDict["timetable"] as? [[String: Any]] {
+                return timetable
+            }
+            if let periods = resultDict["periods"] as? [[String: Any]] {
+                return periods
+            }
+        }
+
+        if let timetableObj = data["timetable"] as? [String: Any],
+           let periods = timetableObj["periods"] as? [[String: Any]] {
+            return periods
+        }
+
+        if let timetable = data["timetable"] as? [[String: Any]] {
+            return timetable
+        }
+
+        if let periods = data["periods"] as? [[String: Any]] {
+            return periods
+        }
+
+        if data.count == 1, let firstValue = data.values.first as? [[String: Any]] {
+            return firstValue
+        }
+
+        return nil
+    }
+
+    private static func buildPeriod(from dict: [String: Any], index: Int, formatter: DateFormatter) -> Period? {
+        let identifier = int64(from: dict["id"]) ?? Int64(index)
+        let lessonId = int64(from: dict["lessonId"]) ?? identifier
+
+        guard let baseDate = parseDate(dict["date"], formatter: formatter) else {
+            return nil
+        }
+
+        let startDateTime = combine(date: baseDate, time: dict["startTime"])
+        let endDateTime = combine(date: baseDate, time: dict["endTime"])
+
+        let subjectName = firstName(in: dict["su"], defaultPrefix: "Subject")
+        let teacherName = firstName(in: dict["te"], defaultPrefix: "Teacher")
+        let roomName = firstName(in: dict["ro"], defaultPrefix: "Room")
+        let className = firstName(in: dict["kl"], defaultPrefix: "Class")
+
+        var elements: [PeriodElement] = []
+        elements.append(contentsOf: makeElements(type: .teacher, from: dict["te"], defaultPrefix: "Teacher"))
+        elements.append(contentsOf: makeElements(type: .room, from: dict["ro"], defaultPrefix: "Room"))
+        elements.append(contentsOf: makeElements(type: .subject, from: dict["su"], defaultPrefix: "Subject"))
+        elements.append(contentsOf: makeElements(type: .klasse, from: dict["kl"], defaultPrefix: "Class"))
+
+        var states: [PeriodState] = []
+        if let code = (dict["code"] as? String)?.lowercased() {
+            switch code {
+            case "cancelled": states.append(.cancelled)
+            case "irregular": states.append(.irregular)
+            case "exam": states.append(.exam)
+            default: break
+            }
+        }
+
+        if let flags = dict["statflags"] as? String, flags.lowercased().contains("absent") {
+            states.append(.irregular)
+        }
+
+        let lessonText = subjectName ?? className ?? teacherName
+        let infoText = dict["info"] as? String ?? dict["activityType"] as? String
+
+        let periodText = PeriodText(
+            lesson: lessonText,
+            substitution: dict["substitutionText"] as? String,
+            info: infoText
+        )
+
+        return Period(
+            id: identifier,
+            lessonId: lessonId,
+            startDateTime: startDateTime,
+            endDateTime: endDateTime,
+            foreColor: dict["foreColor"] as? String ?? "#000000",
+            backColor: dict["backColor"] as? String ?? "#FFFFFF",
+            innerForeColor: dict["innerForeColor"] as? String ?? "#000000",
+            innerBackColor: dict["innerBackColor"] as? String ?? "#FFFFFF",
+            text: periodText,
+            elements: elements,
+            can: [],
+            is: states,
+            homeWorks: nil,
+            exam: nil,
+            isOnlinePeriod: dict["isOnlinePeriod"] as? Bool,
+            messengerChannel: nil,
+            onlinePeriodLink: dict["onlinePeriodLink"] as? String,
+            blockHash: dict["blockHash"] as? Int
+        )
+    }
+
+    private static func parseDate(_ value: Any?, formatter: DateFormatter) -> Date? {
+        if let dateString = value as? String {
+            if dateString.count == 8, let _ = Int(dateString) {
+                return formatter.date(from: dateString)
+            }
+            if let date = ISO8601DateFormatter().date(from: dateString) {
+                return date
+            }
+        }
+
+        if let number = value as? Int {
+            let padded = String(format: "%08d", number)
+            return formatter.date(from: padded)
+        }
+
+        if let number = value as? Double {
+            let intValue = Int(number)
+            let padded = String(format: "%08d", intValue)
+            return formatter.date(from: padded)
+        }
+
+        return nil
+    }
+
+    private static func makeElements(type: ElementType, from value: Any?, defaultPrefix: String) -> [PeriodElement] {
+        guard let array = value as? [[String: Any]], !array.isEmpty else { return [] }
+        return array.compactMap { entry in
+            let id = int64(from: entry["id"]) ?? Int64(abs(UUID().uuidString.hashValue))
+            let name = entry["name"] as? String ?? "\(defaultPrefix) \(id)"
+            let longName = entry["longname"] as? String ?? name
+            return PeriodElement(
+                type: type,
+                id: id,
+                name: name,
+                longName: longName,
+                displayName: entry["displayname"] as? String,
+                alternateName: entry["alternateName"] as? String,
+                backColor: entry["backColor"] as? String,
+                foreColor: entry["foreColor"] as? String,
+                canViewTimetable: entry["canViewTimetable"] as? Bool
+            )
+        }
+    }
+
+    private static func firstName(in value: Any?, defaultPrefix: String) -> String? {
+        guard let entry = (value as? [[String: Any]])?.first else { return nil }
+        if let name = entry["name"] as? String, !name.isEmpty { return name }
+        if let longName = entry["longname"] as? String, !longName.isEmpty { return longName }
+        if let id = entry["id"] as? Int {
+            return "\(defaultPrefix) \(id)"
+        }
+        return nil
+    }
+
+    static func combine(date: Date, time: Any?) -> Date {
+        if let string = time as? String {
+            return combine(date: date, time: string)
+        }
+        if let intValue = time as? Int {
+            return combine(date: date, time: String(format: "%04d", intValue))
+        }
+        if let doubleValue = time as? Double {
+            let intValue = Int(doubleValue)
+            return combine(date: date, time: String(format: "%04d", intValue))
+        }
+        return date
+    }
+
+    static func combine(date: Date, time: String?) -> Date {
+        guard let time, !time.isEmpty else { return date }
+        let sanitized = time.replacingOccurrences(of: " ", with: "")
+        let normalized: String
+        if sanitized.contains(":") {
+            normalized = sanitized.replacingOccurrences(of: ":", with: "")
+        } else if sanitized.contains(".") {
+            normalized = sanitized.replacingOccurrences(of: ".", with: "")
+        } else {
+            normalized = sanitized
+        }
+
+        guard normalized.count == 4, let value = Int(normalized) else { return date }
+        let hour = value / 100
+        let minute = value % 100
+        return Calendar.current.date(bySettingHour: hour, minute: minute, second: 0, of: date) ?? date
+    }
+
+    private static func int64(from value: Any?) -> Int64? {
+        if let intValue = value as? Int {
+            return Int64(intValue)
+        }
+        if let int64Value = value as? Int64 {
+            return int64Value
+        }
+        if let stringValue = value as? String, let intValue = Int(stringValue) {
+            return Int64(intValue)
+        }
+        return nil
     }
 }

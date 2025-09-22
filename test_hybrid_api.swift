@@ -1,13 +1,61 @@
 import Foundation
 
+private func loadDotenv() {
+    let fileManager = FileManager.default
+    let envFileName = ".env"
+    var searchURL = URL(fileURLWithPath: fileManager.currentDirectoryPath)
+
+    for _ in 0..<10 {
+        let candidate = searchURL.appendingPathComponent(envFileName)
+        if fileManager.fileExists(atPath: candidate.path) {
+            if let contents = try? String(contentsOf: candidate, encoding: .utf8) {
+                for line in contents.split(whereSeparator: { $0.isNewline }) {
+                    let trimmed = line.trimmingCharacters(in: .whitespaces)
+                    if trimmed.isEmpty || trimmed.hasPrefix("#") { continue }
+                    let parts = trimmed.split(separator: "=", maxSplits: 1).map { String($0) }
+                    guard parts.count == 2 else { continue }
+                    let key = parts[0].trimmingCharacters(in: .whitespaces)
+                    let value = parts[1].trimmingCharacters(in: .whitespaces)
+                    setenv(key, value, 1)
+                }
+            }
+            break
+        }
+
+        let parent = searchURL.deletingLastPathComponent()
+        if parent.path == searchURL.path { break }
+        searchURL = parent
+    }
+}
+
+private func requireEnv(_ key: String) -> String {
+    if let value = ProcessInfo.processInfo.environment[key], !value.isEmpty {
+        return value
+    }
+    fatalError("Missing required environment variable '\(key)'. Create a .env file based on .env.example before running this script.")
+}
+
+private func encodedSchoolName(_ name: String) -> String {
+    name.replacingOccurrences(of: " ", with: "+")
+}
+
+loadDotenv()
+
 /// Comprehensive test suite for all API approaches: REST, JSONRPC, and HTML parsing
 class HybridAPITester {
 
     // Test server configuration
-    static let testServerURL = "https://mese.webuntis.com/WebUntis/?school=IT-Schule+Stuttgart"
-    static let testUsername = "noel.burkhardt"
-    static let testPassword = "Noel2008"
-    static let testSchoolName = "IT-Schule Stuttgart"
+    static let testBaseServer = requireEnv("UNTIS_BASE_SERVER").trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+    static let testSchoolName = requireEnv("UNTIS_SCHOOL")
+    static let testServerURL = "\(testBaseServer)/WebUntis/?school=\(encodedSchoolName(testSchoolName))"
+    static let testUsername = requireEnv("UNTIS_USERNAME")
+    static let testPassword = requireEnv("UNTIS_PASSWORD")
+    static let testStudentId: Int = {
+        guard let value = Int(requireEnv("UNTIS_PERSON_ID")) else {
+            fatalError("UNTIS_PERSON_ID must be a valid integer")
+        }
+        return value
+    }()
 
     static func runComprehensiveTests() async {
         print("🚀 Starting Comprehensive API Tests")
@@ -33,8 +81,7 @@ class HybridAPITester {
         print("\n🌐 Testing REST API Client")
         print("==========================")
 
-        let baseURL = testServerURL.replacingOccurrences(of: "/WebUntis/?school=IT-Schule+Stuttgart", with: "")
-        let restClient = UntisRESTClient(baseURL: baseURL, schoolName: testSchoolName)
+        let restClient = UntisRESTClient.create(for: testBaseServer, schoolName: testSchoolName)
 
         // Test connection
         print("🔍 Testing REST API connection...")
@@ -66,7 +113,7 @@ class HybridAPITester {
 
                 let timetableResponse = try await restClient.getTimetable(
                     elementType: .student,
-                    elementId: 1, // Test with ID 1
+                    elementId: testStudentId,
                     startDate: startDate,
                     endDate: endDate
                 )
@@ -205,17 +252,29 @@ class HybridAPITester {
         print("\n🌐 Testing HTML Parser")
         print("======================")
 
-        print("🔄 HTML parser integration pending...")
-        print("   Will test:")
-        print("   - Web authentication with session management")
-        print("   - Absence data extraction from HTML tables")
-        print("   - Exam data parsing from timetable")
-        print("   - Homework assignment parsing")
-        print("   - Timetable with enhanced status information")
+        do {
+            let parser = WebUntisHTMLParser(serverURL: testBaseServer, school: encodedSchoolName(testSchoolName))
+            try await parser.authenticate(username: testUsername, password: testPassword)
 
-        // TODO: Implement when HTML parser package is integrated
-        // let htmlParser = WebUntisHTMLParser(serverURL: testServerURL, schoolName: testSchoolName)
-        // ...
+            let startDate = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
+            let endDate = Calendar.current.date(byAdding: .day, value: 7, to: Date()) ?? Date()
+
+            let periods = try await parser.parseEnhancedTimetable(startDate: startDate, endDate: endDate)
+            print("   ✅ HTML timetable periods: \(periods.count)")
+
+            let absences = try await parser.parseAbsences()
+            print("   ✅ HTML absences: \(absences.count)")
+
+            let homework = try await parser.parseHomework(startDate: startDate, endDate: endDate)
+            print("   ✅ HTML homework: \(homework.count)")
+
+            let exams = try await parser.parseExams(startDate: startDate, endDate: endDate)
+            print("   ✅ HTML exams: \(exams.count)")
+
+            try await parser.logout()
+        } catch {
+            print("   ❌ HTML parser test failed: \(error.localizedDescription)")
+        }
     }
 
     // MARK: - Hybrid Service Tests
@@ -224,11 +283,11 @@ class HybridAPITester {
         print("\n🔄 Testing Hybrid Service")
         print("==========================")
 
-        let hybridService = HybridUntisService.create(for: testServerURL, schoolName: testSchoolName)
+        let hybridService = HybridUntisService.create(for: testBaseServer, schoolName: testSchoolName)
 
         // Test server capabilities detection
         print("🔍 Testing server capabilities detection...")
-        await hybridService.testServerCapabilities(serverURL: testServerURL, schoolName: testSchoolName)
+        await hybridService.testServerCapabilities(serverURL: testBaseServer, schoolName: testSchoolName)
 
         let status = hybridService.getServiceStatus()
         print("   Server capabilities:")
@@ -242,7 +301,7 @@ class HybridAPITester {
             try await hybridService.authenticate(
                 username: testUsername,
                 password: testPassword,
-                serverURL: testServerURL,
+                serverURL: testBaseServer,
                 schoolName: testSchoolName
             )
 
@@ -257,7 +316,7 @@ class HybridAPITester {
 
                 let periods = try await hybridService.getTimetable(
                     elementType: .student,
-                    elementId: 1,
+                    elementId: testStudentId,
                     startDate: startDate,
                     endDate: endDate
                 )

@@ -51,8 +51,8 @@ class KeychainManager {
     }
 
     // MARK: - User Credentials Management
-    func saveUserCredentials(userId: String, user: String, key: String) -> Bool {
-        let credentials = UserCredentials(user: user, key: key)
+    func saveUserCredentials(userId: String, user: String, key: String, personId: Int64? = nil) -> Bool {
+        let credentials = UserCredentials(user: user, key: key, personId: personId)
 
         do {
             let data = try JSONEncoder().encode(credentials)
@@ -117,4 +117,5 @@ class KeychainManager {
 struct UserCredentials: Codable {
     let user: String
     let key: String
+    let personId: Int64?
 }

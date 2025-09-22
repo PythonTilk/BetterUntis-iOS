@@ -1,0 +1,9282 @@
+CFPrefsPlistSource<0x101dfca00> (Domain: kCFPreferencesAnyApplication, User: kCFPreferencesCurrentUser, ByHost: No, Container: (null), Contents Need Refresh: No): Value for key AppleLanguages was (
+    "de-DE",
+    "en-DE"
+). Expected (
+    "de-DE"
+) (Setup(331): 2025-07-26 15:58:25 (PDT))
+No previous error history found or failed to load: The file “error_history.json” couldn’t be opened because there is no such file.
+ℹ️ 🚀 BetterUntis app starting up
+ℹ️ Debug logging enabled: true
+ℹ️ Verbose logging enabled: true
+ℹ️ 📱 Device: iPhone (iOS 26.0)
+🧠 Memory usage: 86,1 MB [App Startup]
+ℹ️ 🔧 Build Configuration: DEBUG
+ℹ️ 📦 App Version: 1.0 (Build 1)
+ℹ️ ✅ Debug environment setup complete
+📱 Loading view: ContentView
+📊 Forcing live data refresh for debugging
+ℹ️ REST client has no token for user 83746; skipping REST timetable
+🔗 Built API URL: https://mese.webuntis.com/WebUntis/jsonrpc.do?school=IT-Schule%20Stuttgart
+🔗 Built API URL: https://mese.webuntis.com/WebUntis/jsonrpc_intern.do?school=IT-Schule%20Stuttgart
+🔄 Trying timetable API URL: https://mese.webuntis.com/WebUntis/jsonrpc.do?school=IT-Schule%20Stuttgart
+🔄 Trying primary getTimetable method...
+📊 Raw timetable response for method getTimetable2017:
+📊 {
+  "id" : "69DEDE9B-C321-4ADC-9D99-55387C1D2B81",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+❌ Primary getTimetable method not found, trying fallbacks...
+🔄 Trying fallback method: getOwnTimetableForToday
+📊 Raw timetable response for method getOwnTimetableForToday:
+📊 {
+  "id" : "74F381D2-5F93-470E-82CC-1BA831896927",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+🔄 Trying fallback method: getTimetableForToday
+📊 Raw timetable response for method getTimetableForToday:
+📊 {
+  "id" : "272C8E29-52DC-4693-8312-8E457BD6BF35",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+🔄 Trying fallback method: getTimetableForElement
+📊 Raw timetable response for method getTimetableForElement:
+📊 {
+  "id" : "F16493AB-BB12-40D0-AFBD-B0C4D7047A38",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+🔄 Trying fallback method: getTimetableData
+📊 Raw timetable response for method getTimetableData:
+📊 {
+  "id" : "702165B4-0529-4D5C-BBA3-94DB788662B1",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+🔄 Trying fallback method: getLessons
+📊 Raw timetable response for method getLessons:
+📊 {
+  "id" : "D789932F-D4A9-425A-8EB5-458C2624674F",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "not authenticated",
+    "code" : -8520
+  }
+}
+⚠️ Method getLessons exists but has error: not authenticated
+🔄 Trying fallback method: getPeriods
+📊 Raw timetable response for method getPeriods:
+📊 {
+  "id" : "CA5755B9-16D5-483E-875C-9BF46E614A8E",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+🔄 Trying ultra-basic timetable fallback...
+🔄 Trying ultra-basic method: getMyTimetable
+📊 Raw ultra-basic response for method getMyTimetable:
+📊 {
+  "id" : "8E7F81C7-3C17-4591-A4FA-557F76BF4F3B",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+🔄 Trying ultra-basic method: getStudentTimetable
+📊 Raw ultra-basic response for method getStudentTimetable:
+📊 {
+  "id" : "F30594F0-03D3-4D57-89DE-B52AA453896B",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+🔄 Trying ultra-basic method: getCurrentTimetable
+📊 Raw ultra-basic response for method getCurrentTimetable:
+📊 {
+  "id" : "C0512A7A-1E16-4486-BF6F-9A035F904DEA",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+❌ Even basic timetable approach failed: No basic timetable methods work on this server
+🔄 Trying getLessons as ultimate fallback...
+📊 Raw getLessons response:
+📊 {
+  "id" : "36AF84C9-2CCA-49E1-9087-90FE07E88ABA",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "not authenticated",
+    "code" : -8520
+  }
+}...
+❌ Even getLessons failed: not authenticated
+⚠️ No timetable methods work - providing empty timetable structure
+✅ Timetable loaded successfully with URL: https://mese.webuntis.com/WebUntis/jsonrpc.do?school=IT-Schule%20Stuttgart
+📊 Master data found but Core Data model needs RoomEntity - skipping storage for now
+📊 Parsing timetable dictionary with keys: ["masterData", "timetable", "serverMessage"]
+📋 Server message: This WebUntis server version does not support automated timetable retrieval. Please check your timetable manually on the WebUntis website.
+📊 Found standard 'timetable' array with 0 periods
+⚠️ Timetable array is empty
+📊 Forcing live data refresh for debugging
+ℹ️ REST client has no token for user 83746; skipping REST timetable
+🔗 Built API URL: https://mese.webuntis.com/WebUntis/jsonrpc.do?school=IT-Schule%20Stuttgart
+🔗 Built API URL: https://mese.webuntis.com/WebUntis/jsonrpc_intern.do?school=IT-Schule%20Stuttgart
+🔄 Trying timetable API URL: https://mese.webuntis.com/WebUntis/jsonrpc.do?school=IT-Schule%20Stuttgart
+🔄 Trying primary getTimetable method...
+📊 Raw timetable response for method getTimetable2017:
+📊 {
+  "id" : "1A7C9B12-5C01-4BBE-A2FF-0689C80163DE",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+❌ Primary getTimetable method not found, trying fallbacks...
+🔄 Trying fallback method: getOwnTimetableForToday
+📊 Raw timetable response for method getOwnTimetableForToday:
+📊 {
+  "id" : "C1621754-3A50-4106-BD2C-74CE8BFFE77E",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+🔄 Trying fallback method: getTimetableForToday
+📊 Raw timetable response for method getTimetableForToday:
+📊 {
+  "id" : "1DBCD8B1-C5E4-4706-BFD1-B809EDA138F3",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+🔄 Trying fallback method: getTimetableForElement
+📊 Raw timetable response for method getTimetableForElement:
+📊 {
+  "id" : "5A463848-B549-4932-8012-7407657CD930",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+🔄 Trying fallback method: getTimetableData
+📊 Raw timetable response for method getTimetableData:
+📊 {
+  "id" : "77E4B318-B377-44C7-889A-DE5383BE27B5",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+🔄 Trying fallback method: getLessons
+📊 Raw timetable response for method getLessons:
+📊 {
+  "id" : "486AB7EA-3E58-4B9C-971D-C76FF34A8CEB",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "not authenticated",
+    "code" : -8520
+  }
+}
+⚠️ Method getLessons exists but has error: not authenticated
+🔄 Trying fallback method: getPeriods
+📊 Raw timetable response for method getPeriods:
+📊 {
+  "id" : "C0806BED-D348-4224-9948-4CFFAD9FB457",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+🔄 Trying ultra-basic timetable fallback...
+🔄 Trying ultra-basic method: getMyTimetable
+📊 Raw ultra-basic response for method getMyTimetable:
+📊 {
+  "id" : "3264E1D6-735C-4E13-A7A8-F5D12BBEB996",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+🔄 Trying ultra-basic method: getStudentTimetable
+📊 Raw ultra-basic response for method getStudentTimetable:
+📊 {
+  "id" : "8CD5FE0E-410B-4A97-9BBD-4AB65D0BDF86",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+🔄 Trying ultra-basic method: getCurrentTimetable
+📊 Raw ultra-basic response for method getCurrentTimetable:
+📊 {
+  "id" : "22E07FB0-409C-4236-BF22-20AC2D9076BA",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+❌ Even basic timetable approach failed: No basic timetable methods work on this server
+🔄 Trying getLessons as ultimate fallback...
+📊 Raw getLessons response:
+📊 {
+  "id" : "FC9947BD-FFFC-44B0-A3C9-4A68B43802C7",
+  "jsonrpc" : "2.0",
+  "error" : {
+    "message" : "not authenticated",
+    "code" : -8520
+  }
+}...
+❌ Even getLessons failed: not authenticated
+⚠️ No timetable methods work - providing empty timetable structure
+✅ Timetable loaded successfully with URL: https://mese.webuntis.com/WebUntis/jsonrpc.do?school=IT-Schule%20Stuttgart
+📊 Master data found but Core Data model needs RoomEntity - skipping storage for now
+📊 Parsing timetable dictionary with keys: ["timetable", "masterData", "serverMessage"]
+📋 Server message: This WebUntis server version does not support automated timetable retrieval. Please check your timetable manually on the WebUntis website.
+📊 Found standard 'timetable' array with 0 periods
+⚠️ Timetable array is empty
+<<<< FigXPCUtilities >>>> signalled err=-17281 at <>:299
+<<<< FigCaptureSourceRemote >>>> Fig assert: "err == 0 " at bail (FigCaptureSourceRemote.m:569) - (err=-17281)
+✅ QR Scanner: Found QR code: untis://setschool?url=mese.webuntis.com&school=IT-Schule Stuttgart&user=noel.burkhardt&key=R2LEKM6QZIERGKPP&schoolNumber=6097700
+<<<< FigXPCUtilities >>>> signalled err=-17281 at <>:299
+<<<< FigCaptureSourceRemote >>>> Fig assert: "err == 0 " at bail (FigCaptureSourceRemote.m:569) - (err=-17281)
+Could not find cached accumulator for token=186D24B0 type:0 in -[TUIKeyboardCandidateMultiplexer receiveExternalAutocorrectionUpdate:requestToken:]_block_invoke
+Could not find cached accumulator for token=186D24B0 type:1 in -[TUIKeyboardCandidateMultiplexer _queueOnly_willHandleDeliveryForCandidates:requestToken:]
+Could not find cached accumulator for token=1431AE04 type:0 in -[TUIKeyboardCandidateMultiplexer receiveExternalAutocorrectionUpdate:requestToken:]_block_invoke
+Could not find cached accumulator for token=1431AE04 type:1 in -[TUIKeyboardCandidateMultiplexer _queueOnly_willHandleDeliveryForCandidates:requestToken:]
+🔄 Attempting authentication with standard endpoint: https://mese.webuntis.com/WebUntis/jsonrpc.do?school=IT-Schule%20Stuttgart
+🔐 Auth attempt: JSONRPC(authenticate) for user 'noel.burkhardt' on https://mese.webuntis.com/WebUntis/jsonrpc.do?school=IT-Schule%20Stuttgart
+🌐 POST https://mese.webuntis.com/WebUntis/jsonrpc.do?school=IT-Schule%20Stuttgart
+   Header: User-Agent = BetterUntis/1.0.0 (iOS; iPhone; Mobile)
+   Header: X-Untis-Application-ID = BetterUntis-iOS
+   Header: Content-Type = application/json
+✅ 200 https://mese.webuntis.com/WebUntis/jsonrpc.do?school=IT-Schule%20Stuttgart (0.28s) [167 bytes]
+🔍 [UntisAPIClient.swift:performAuthentication(apiUrl:user:password:client:method:):287] [API Response]: Authentication response: {"jsonrpc":"2.0","id":"940B1D0E-2732-44F0-97FE-6B4C15A14CB2","result":{"sessionId":"9F62D99DAEC0BC0DCDEB16CE54FEE402","personType":5,"personId":19751,"klasseId":2968}}
+✅ Auth successful: JSONRPC(authenticate) for user 'noel.burkhardt'
+✅ Authentication successful with standard endpoint
+🔄 Attempting to get user data from: https://mese.webuntis.com/WebUntis/jsonrpc.do?school=IT-Schule%20Stuttgart
+🔄 UntisAPIClient.getUserData - URL: https://mese.webuntis.com/WebUntis/jsonrpc.do?school=IT-Schule%20Stuttgart
+🔄 UntisAPIClient.getUserData - User: noel.burkhardt
+❌ getUserData failed: Error Domain=UntisAPI Code=-32601 "The getUserData method is not supported by this server. This may be an older WebUntis version." UserInfo={NSLocalizedDescription=The getUserData method is not supported by this server. This may be an older WebUntis version.}
+🔄 getUserData not supported, using fallback approach...
+✅ Using fallback user data - ID: 72715, Display: noel.burkhardt, School: IT-Schule Stuttgart
+💾 Saved working API URL for user 72715: https://mese.webuntis.com/WebUntis/jsonrpc.do?school=IT-Schule%20Stuttgart
+🔐 Attempting REST authentication for noel.burkhardt on https://mese.webuntis.com
+🔐 REST Authentication request to: https://mese.webuntis.com/WebUntis/api/mobile/v2/IT-Schule%20Stuttgart/authentication
+🔐 REST Auth response status: 200
+🔑 Stored REST token for IT-Schule Stuttgart
+✅ REST Authentication successful
+✅ REST authentication stored for noel.burkhardt
+📊 Forcing live data refresh for debugging
+🔑 Loaded stored REST token for IT-Schule Stuttgart
+📅 REST Timetable entries request: https://mese.webuntis.com/WebUntis/api/rest/view/v1/timetable/entries?start=2025-09-22T00:00:00&end=2025-09-28T23:59:59&resourceType=STUDENT&layout=PRIORITY&format=1&resources=19751&timetableType=MY_TIMETABLE
+📅 REST Timetable entries status: 400
+❌ REST Timetable entries failed: UntisAPIError(code: 400, message: "Timetable entries request failed", details: nil, timestamp: Optional(2025-09-22 10:26:04 +0000))
+⚠️ REST timetable fetch failed: The operation couldn’t be completed. (BetterUntis.UntisAPIError error 1.)
+🔗 Built API URL: https://mese.webuntis.com/WebUntis/jsonrpc.do?school=IT-Schule%20Stuttgart
+🔗 Built API URL: https://mese.webuntis.com/WebUntis/jsonrpc_intern.do?school=IT-Schule%20Stuttgart
+🔄 Trying timetable API URL: https://mese.webuntis.com/WebUntis/jsonrpc.do?school=IT-Schule%20Stuttgart
+🔄 Trying primary getTimetable method...
+📊 Raw timetable response for method getTimetable2017:
+📊 {
+  "jsonrpc" : "2.0",
+  "id" : "642B8864-68AF-4239-9F1F-49118C0F6338",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+❌ Primary getTimetable method not found, trying fallbacks...
+🔄 Trying fallback method: getOwnTimetableForToday
+📊 Raw timetable response for method getOwnTimetableForToday:
+📊 {
+  "jsonrpc" : "2.0",
+  "id" : "DA3B797F-44FD-4EC8-8D04-588D7FBCB4F5",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+🔄 Trying fallback method: getTimetableForToday
+📊 Raw timetable response for method getTimetableForToday:
+📊 {
+  "jsonrpc" : "2.0",
+  "id" : "F4AF838B-1C93-432D-AE0E-25D154A86319",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+🔄 Trying fallback method: getTimetableForElement
+📊 Raw timetable response for method getTimetableForElement:
+📊 {
+  "jsonrpc" : "2.0",
+  "id" : "4294E8FB-C587-4554-96A2-B63BE2A31B59",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+🔄 Trying fallback method: getTimetableData
+📊 Raw timetable response for method getTimetableData:
+📊 {
+  "jsonrpc" : "2.0",
+  "id" : "6C956C20-DE99-4F11-BB98-CB010733119E",
+  "error" : {
+    "message" : "Method not found",
+    "code" : -32601
+  }
+}
+🔄 Trying fallback method: getLessons
+📊 Raw timetable response for method getLessons:
+📊 {
+  "result" : [
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 1
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2905
+        }
+      ],
+      "id" : 49395,
+      "lessonNumber" : 267200,
+      "studentgroup" : "AEP_FTI2",
+      "startDate" : 20250915,
+      "endDate" : 20260131,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 35
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 6
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2709
+        }
+      ],
+      "id" : 49398,
+      "lessonNumber" : 239500,
+      "studentgroup" : "AM_1BK1T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 187
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+
+          "id" : 15
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2905
+        }
+      ],
+      "id" : 49401,
+      "lessonNumber" : 267100,
+      "studentgroup" : "BKOM_FTI2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 65
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 15
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2902
+        }
+      ],
+      "id" : 49404,
+      "lessonNumber" : 269600,
+      "studentgroup" : "BKOM_FTI1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 46
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 17
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2851
+        }
+      ],
+      "id" : 49413,
+      "lessonNumber" : 254200,
+      "studentgroup" : "BWL_E3FI4",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 35
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 17
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2905
+        }
+      ],
+      "id" : 49419,
+      "lessonNumber" : 269400,
+      "studentgroup" : "BWL_FTI2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 72
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 19
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 49431,
+      "lessonNumber" : 236300,
+      "studentgroup" : "CH_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 3,
+      "teachers" : [
+        {
+          "id" : 24
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 19
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2956
+        }
+      ],
+      "id" : 49434,
+      "lessonNumber" : 241800,
+      "studentgroup" : "CH_TGIE1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 24
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 19
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2959
+        }
+      ],
+      "id" : 49437,
+      "lessonNumber" : 243400,
+      "studentgroup" : "CH_TGIE2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 24
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 19
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 49440,
+      "lessonNumber" : 243800,
+      "studentgroup" : "CH_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 3,
+      "teachers" : [
+        {
+          "id" : 24
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 19
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2962
+        }
+      ],
+      "id" : 49443,
+      "lessonNumber" : 246500,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 22
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 49446,
+      "lessonNumber" : 39800,
+      "studentgroup" : "CHL_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 5,
+      "teachers" : [
+        {
+          "id" : 24
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 22
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 49449,
+      "lessonNumber" : 254000,
+      "studentgroup" : "CHL_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 5,
+      "teachers" : [
+        {
+          "id" : 24
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 23
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2902
+        }
+      ],
+      "id" : 49452,
+      "lessonNumber" : 105500,
+      "studentgroup" : "CS_FTI1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 32
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 23
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2905
+        }
+      ],
+      "id" : 49455,
+      "lessonNumber" : 234500,
+      "studentgroup" : "CS_FTI2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 27
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2742
+        }
+      ],
+      "id" : 49485,
+      "lessonNumber" : 207000,
+      "studentgroup" : "D_D3MB1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 3,
+      "teachers" : [
+        {
+          "id" : 90
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2745
+        }
+      ],
+      "id" : 49488,
+      "lessonNumber" : 207100,
+      "studentgroup" : "D_D3MB2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 3,
+      "teachers" : [
+        {
+          "id" : 90
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2748
+        }
+      ],
+      "id" : 49491,
+      "lessonNumber" : 207200,
+      "studentgroup" : "D_D3MB3AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 3,
+      "teachers" : [
+        {
+          "id" : 90
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2866
+        }
+      ],
+      "id" : 49497,
+      "lessonNumber" : 235600,
+      "studentgroup" : "D_E3FS2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 129
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2863
+        }
+      ],
+      "id" : 49503,
+      "lessonNumber" : 237900,
+      "studentgroup" : "D_E3FS1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 129
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2712
+        }
+      ],
+      "id" : 49506,
+      "lessonNumber" : 240800,
+      "studentgroup" : "D_1BK2T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 111
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2956
+        }
+      ],
+      "id" : 49509,
+      "lessonNumber" : 242300,
+      "studentgroup" : "D_TGIE1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+
+        {
+          "id" : 96
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2962
+        }
+      ],
+      "id" : 49512,
+      "lessonNumber" : 246600,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2842
+        }
+      ],
+      "id" : 49551,
+      "lessonNumber" : 255400,
+      "studentgroup" : "D_E3FI1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 86
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2839
+        }
+      ],
+      "id" : 49563,
+      "lessonNumber" : 258900,
+      "studentgroup" : "D_E3FA1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 10
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2890
+        }
+      ],
+      "id" : 49587,
+      "lessonNumber" : 262300,
+      "studentgroup" : "D_E3IT2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 10
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2869
+        }
+      ],
+      "id" : 49599,
+      "lessonNumber" : 264600,
+      "studentgroup" : "D_E3FS3AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 86
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2971
+        }
+      ],
+      "id" : 49602,
+      "lessonNumber" : 264900,
+      "studentgroup" : "D_W1DM1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 46
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2893
+        }
+      ],
+      "id" : 49608,
+      "lessonNumber" : 271200,
+      "studentgroup" : "D_E3IT3AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 10
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2824
+        }
+      ],
+      "id" : 49611,
+      "lessonNumber" : 271600,
+      "studentgroup" : "D_E2FS5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 111
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2776
+        }
+      ],
+      "id" : 49620,
+      "lessonNumber" : 274300,
+      "studentgroup" : "D_E1FS5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 111
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2763
+        }
+      ],
+      "id" : 49626,
+      "lessonNumber" : 276300,
+      "studentgroup" : "D_E1FI5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 111
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2806
+        }
+      ],
+      "id" : 49632,
+      "lessonNumber" : 277300,
+      "studentgroup" : "D_E2FI5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 111
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2974
+        }
+      ],
+      "id" : 49635,
+      "lessonNumber" : 277900,
+      "studentgroup" : "D_W1SY1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 46
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2977
+        }
+      ],
+      "id" : 49638,
+      "lessonNumber" : 278100,
+      "studentgroup" : "D_W1SY2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 46
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2983
+        }
+      ],
+      "id" : 49647,
+      "lessonNumber" : 280600,
+      "studentgroup" : "D_W2SY1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 139
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2986
+        }
+      ],
+      "id" : 49650,
+      "lessonNumber" : 283200,
+      "studentgroup" : "D_W2SY2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 139
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 31
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 3003
+        }
+      ],
+      "id" : 49527,
+      "lessonNumber" : 249500,
+      "studentgroup" : "D_E3IE1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 10
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 34
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2709
+        }
+      ],
+      "id" : 49662,
+      "lessonNumber" : 239800,
+      "studentgroup" : "D-Bkomm_1BK1T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 111
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 40
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2902
+        }
+      ],
+      "id" : 49665,
+      "lessonNumber" : 269700,
+      "studentgroup" : "DB_FTI1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 66
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 40
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2905
+        }
+      ],
+      "id" : 49668,
+      "lessonNumber" : 274200,
+      "studentgroup" : "DB_FTI2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 54
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 43
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2866
+        }
+      ],
+      "id" : 49683,
+      "lessonNumber" : 239000,
+      "studentgroup" : "E_E3FS2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 25
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 43
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2709
+        }
+      ],
+      "id" : 49692,
+      "lessonNumber" : 240000,
+      "studentgroup" : "E_1BK1T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 221
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 43
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2712
+        }
+      ],
+      "id" : 49695,
+      "lessonNumber" : 241100,
+      "studentgroup" : "E_1BK2T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 221
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 43
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2956
+        }
+      ],
+      "id" : 49698,
+      "lessonNumber" : 242400,
+      "studentgroup" : "E_TGIE1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 49
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 43
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2959
+        }
+      ],
+      "id" : 49701,
+      "lessonNumber" : 243500,
+      "studentgroup" : "E_TGIE2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 49
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 43
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2962
+        }
+      ],
+      "id" : 49704,
+      "lessonNumber" : 246700,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 43
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2989
+        }
+      ],
+      "id" : 49719,
+      "lessonNumber" : 251900,
+      "studentgroup" : "E_W3DM1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 221
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 43
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2863
+        }
+      ],
+      "id" : 49728,
+      "lessonNumber" : 252200,
+      "studentgroup" : "E_E3FS1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 25
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 43
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2872
+        }
+      ],
+      "id" : 49737,
+      "lessonNumber" : 252600,
+      "studentgroup" : "E_E3FS4",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 25
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 43
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2893
+        }
+      ],
+      "id" : 49740,
+      "lessonNumber" : 253200,
+      "studentgroup" : "E_E3IT3AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 25
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 43
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2842
+        }
+      ],
+      "id" : 49743,
+      "lessonNumber" : 253700,
+      "studentgroup" : "E_E3FI1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 139
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 43
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2902
+        }
+      ],
+      "id" : 49749,
+      "lessonNumber" : 256700,
+      "studentgroup" : "E_FTI1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 139
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 43
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2980
+        }
+      ],
+      "id" : 49752,
+      "lessonNumber" : 257300,
+      "studentgroup" : "E_W2DM1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 139
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 43
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2890
+        }
+      ],
+      "id" : 49761,
+      "lessonNumber" : 262500,
+      "studentgroup" : "E_E3IT2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 25
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 43
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2845
+        }
+      ],
+      "id" : 49764,
+      "lessonNumber" : 262900,
+      "studentgroup" : "E_E3FI2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 221
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 43
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2881
+        }
+      ],
+      "id" : 49785,
+      "lessonNumber" : 265900,
+      "studentgroup" : "E_E3FS7AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 25
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 43
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2905
+        }
+      ],
+      "id" : 49800,
+      "lessonNumber" : 266500,
+      "studentgroup" : "E_FTI2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 221
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 43
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2824
+        }
+      ],
+      "id" : 49815,
+      "lessonNumber" : 271700,
+      "studentgroup" : "E_E2FS5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 139
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 43
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2977
+        }
+      ],
+      "id" : 49836,
+      "lessonNumber" : 278500,
+      "studentgroup" : "E_W1SY2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 221
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 43
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2839
+        }
+      ],
+      "id" : 49842,
+      "lessonNumber" : 287400,
+      "studentgroup" : "E_E3FA1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 139
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 43
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2869
+        }
+      ],
+      "id" : 49767,
+      "lessonNumber" : 264000,
+      "studentgroup" : "E_E3FS3AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 25
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 44
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 49848,
+      "lessonNumber" : 244100,
+      "studentgroup" : "E1_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 221
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 44
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 49851,
+      "lessonNumber" : 256400,
+      "studentgroup" : "E1_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 49
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 45
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 49854,
+      "lessonNumber" : 244200,
+      "studentgroup" : "E2_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 44
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 45
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 49857,
+      "lessonNumber" : 256500,
+      "studentgroup" : "E2_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 221
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 50
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 49860,
+      "lessonNumber" : 245400,
+      "studentgroup" : "ETH_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 65
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 50
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2712
+        }
+      ],
+      "id" : 49866,
+      "lessonNumber" : 269100,
+      "studentgroup" : "ETH_1BK2T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 187
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 50
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2956
+        },
+        {
+          "id" : 2959
+        }
+      ],
+      "id" : 49881,
+      "lessonNumber" : 297700,
+      "studentgroup" : "ETH_TGIE1TGIE2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 65
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 51
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 49884,
+      "lessonNumber" : 88500,
+      "studentgroup" : "EVR_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 166
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 51
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2956
+        },
+        {
+          "id" : 2959
+        }
+      ],
+      "id" : 49887,
+      "lessonNumber" : 235300,
+      "studentgroup" : "EVR_TGIE1TGIE2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 166
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 51
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 49896,
+      "lessonNumber" : 297600,
+      "studentgroup" : "EVR_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 166
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 51
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 3003
+        }
+      ],
+      "id" : 49893,
+      "lessonNumber" : 277000,
+      "studentgroup" : "EVR_E3IE1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 166
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 62
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2911
+        }
+      ],
+      "id" : 49902,
+      "lessonNumber" : 295300,
+      "studentgroup" : "FTFrei_FTIT2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 32,
+      "teachers" : [
+        {
+          "id" : 4
+        },
+        {
+          "id" : 27
+        },
+        {
+          "id" : 50
+        },
+        {
+          "id" : 66
+        },
+        {
+          "id" : 72
+        },
+        {
+          "id" : 221
+        },
+        {
+          "id" : 225
+        },
+        {
+          "id" : 231
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 64
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2709
+        }
+      ],
+      "id" : 49905,
+      "lessonNumber" : 40000,
+      "studentgroup" : "GGK_1BK1T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 8
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 64
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2959
+        }
+      ],
+      "id" : 49908,
+      "lessonNumber" : 129300,
+      "studentgroup" : "GGK_TGIE2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 10
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 64
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2956
+        }
+      ],
+      "id" : 49914,
+      "lessonNumber" : 242700,
+      "studentgroup" : "GGK_TGIE1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 129
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 64
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2962
+        }
+      ],
+      "id" : 49917,
+      "lessonNumber" : 246800,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 65
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 49920,
+      "lessonNumber" : 252700,
+      "studentgroup" : "GGK1_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 9
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 65
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 49923,
+      "lessonNumber" : 270400,
+      "studentgroup" : "GGK1_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 8
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 66
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 49926,
+      "lessonNumber" : 43300,
+      "studentgroup" : "GGK2_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 9
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 66
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 49929,
+      "lessonNumber" : 252800,
+      "studentgroup" : "GGK2_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 8
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 69
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2763
+        }
+      ],
+      "id" : 49941,
+      "lessonNumber" : 186400,
+      "studentgroup" : "GK_E1FI5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 218
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 69
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2839
+        }
+      ],
+      "id" : 49947,
+      "lessonNumber" : 212700,
+      "studentgroup" : "GK_E3FA1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 39
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 69
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2992
+        }
+      ],
+      "id" : 49968,
+      "lessonNumber" : 239900,
+      "studentgroup" : "GK_W3SY1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 46
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 69
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2881
+        }
+      ],
+      "id" : 49977,
+      "lessonNumber" : 248200,
+      "studentgroup" : "GK_E3FS7AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 161
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 69
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2863
+        }
+      ],
+      "id" : 49995,
+      "lessonNumber" : 250700,
+      "studentgroup" : "GK_E3FS1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 129
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 69
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2989
+        }
+      ],
+      "id" : 49998,
+      "lessonNumber" : 251200,
+      "studentgroup" : "GK_W3DM1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 46
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 69
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2842
+        }
+      ],
+      "id" : 50010,
+      "lessonNumber" : 255500,
+      "studentgroup" : "GK_E3FI1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 161
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 69
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2866
+        }
+      ],
+      "id" : 50034,
+      "lessonNumber" : 262000,
+      "studentgroup" : "GK_E3FS2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 129
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 69
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2890
+        }
+      ],
+      "id" : 50040,
+      "lessonNumber" : 262400,
+      "studentgroup" : "GK_E3IT2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 218
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 69
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2845
+        }
+      ],
+      "id" : 50043,
+      "lessonNumber" : 262800,
+      "studentgroup" : "GK_E3FI2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 161
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 69
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2869
+        }
+      ],
+      "id" : 50049,
+      "lessonNumber" : 263800,
+      "studentgroup" : "GK_E3FS3AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 161
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 69
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2893
+        }
+      ],
+      "id" : 50067,
+      "lessonNumber" : 271300,
+      "studentgroup" : "GK_E3IT3AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 218
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 69
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2824
+        }
+      ],
+      "id" : 50070,
+      "lessonNumber" : 271800,
+      "studentgroup" : "GK_E2FS5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 225
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 69
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2742
+        }
+      ],
+      "id" : 50082,
+      "lessonNumber" : 276200,
+      "studentgroup" : "GK_D3MB1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 87
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 69
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2977
+        }
+      ],
+      "id" : 50094,
+      "lessonNumber" : 278200,
+      "studentgroup" : "GK_W1SY2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 218
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 69
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2980
+        }
+      ],
+      "id" : 50097,
+      "lessonNumber" : 280400,
+      "studentgroup" : "GK_W2DM1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 218
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 69
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2983
+        }
+      ],
+      "id" : 50100,
+      "lessonNumber" : 280800,
+      "studentgroup" : "GK_W2SY1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 218
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 69
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2745
+        }
+      ],
+      "id" : 50106,
+      "lessonNumber" : 281200,
+      "studentgroup" : "GK_D3MB2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 87
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 69
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2748
+        }
+      ],
+      "id" : 50109,
+      "lessonNumber" : 281400,
+      "studentgroup" : "GK_D3MB3AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 87
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 69
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 3003
+        }
+      ],
+      "id" : 49980,
+      "lessonNumber" : 249100,
+      "studentgroup" : "GK_E3IE1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 3,
+      "teachers" : [
+        {
+          "id" : 64
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 73
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2709
+        }
+      ],
+      "id" : 50121,
+      "lessonNumber" : 200800,
+      "studentgroup" : "GLT_1BK1T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 20
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 78
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2712
+        }
+      ],
+      "id" : 50124,
+      "lessonNumber" : 237800,
+      "studentgroup" : "IT_1BK2T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 33
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 79
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2709
+        }
+      ],
+      "id" : 50127,
+      "lessonNumber" : 240300,
+      "studentgroup" : "IT-A_1BK1T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 66
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 80
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2709
+        }
+      ],
+      "id" : 50130,
+      "lessonNumber" : 240400,
+      "studentgroup" : "IT-B_1BK1T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 33
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 83
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2956
+        }
+      ],
+      "id" : 50133,
+      "lessonNumber" : 242800,
+      "studentgroup" : "IT1-H_TGIE1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 172
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 83
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 50136,
+      "lessonNumber" : 246300,
+      "studentgroup" : "IT1-H_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 28
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 83
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 50139,
+      "lessonNumber" : 283800,
+      "studentgroup" : "IT1-H_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 172
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 84
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 50145,
+      "lessonNumber" : 245500,
+      "studentgroup" : "IT1-S_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 33
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 84
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 50148,
+      "lessonNumber" : 273900,
+      "studentgroup" : "IT1-S_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 33
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 86
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 50151,
+      "lessonNumber" : 226000,
+      "studentgroup" : "IT2-H_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 20
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 86
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 50154,
+      "lessonNumber" : 283900,
+      "studentgroup" : "IT2-H_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 28
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 86
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2959
+        }
+      ],
+      "id" : 50157,
+      "lessonNumber" : 287700,
+      "studentgroup" : "IT2-H_TGIE2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 172
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 87
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 50163,
+      "lessonNumber" : 274000,
+      "studentgroup" : "IT2-S_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 72
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 87
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2959
+        }
+      ],
+      "id" : 50166,
+      "lessonNumber" : 293600,
+      "studentgroup" : "IT2-S_TGIE2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 33
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 89
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 50169,
+      "lessonNumber" : 274100,
+      "studentgroup" : "IT3-H_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 20
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 89
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 50172,
+      "lessonNumber" : 285000,
+      "studentgroup" : "IT3-H_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 20
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 90
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 50173,
+      "lessonNumber" : 234200,
+      "studentgroup" : "IT3-S_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 66
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 98
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2803
+        }
+      ],
+      "id" : 51683,
+      "lessonNumber" : 303300,
+      "studentgroup" : "ITS_E2FI4",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 57
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 98
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2851
+        }
+      ],
+      "id" : 51686,
+      "lessonNumber" : 303600,
+      "studentgroup" : "ITS_E3FI4",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 57
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 99
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2962
+        }
+      ],
+      "id" : 50188,
+      "lessonNumber" : 279200,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 100
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2962
+        }
+      ],
+      "id" : 50191,
+      "lessonNumber" : 62500,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 106
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2956
+        },
+        {
+          "id" : 2959
+        }
+      ],
+      "id" : 50194,
+      "lessonNumber" : 242500,
+      "studentgroup" : "KR_TGIE1TGIE2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 48
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 106
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 50197,
+      "lessonNumber" : 244500,
+      "studentgroup" : "KR_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 48
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 106
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 50200,
+      "lessonNumber" : 245300,
+      "studentgroup" : "KR_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 226
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 113
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2712
+        }
+      ],
+      "id" : 50203,
+      "lessonNumber" : 241300,
+      "studentgroup" : "M_1BK2T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 187
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 113
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2956
+        }
+      ],
+      "id" : 50206,
+      "lessonNumber" : 243000,
+      "studentgroup" : "M_TGIE1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 234
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 113
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2959
+        }
+      ],
+      "id" : 50209,
+      "lessonNumber" : 243600,
+      "studentgroup" : "M_TGIE2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 187
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 113
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2962
+        }
+      ],
+      "id" : 50212,
+      "lessonNumber" : 265000,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 113
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2911
+        }
+      ],
+      "id" : 50215,
+      "lessonNumber" : 266800,
+      "studentgroup" : "M_FTIT2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 231
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 113
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2902
+        }
+      ],
+      "id" : 50218,
+      "lessonNumber" : 267800,
+      "studentgroup" : "M_FTI1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 231
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 113
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2709
+        }
+      ],
+      "id" : 50221,
+      "lessonNumber" : 270500,
+      "studentgroup" : "M_1BK1T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 234
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 114
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2956
+        }
+      ],
+      "id" : 50224,
+      "lessonNumber" : 295100,
+      "studentgroup" : "M-St_TGIE1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 234
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 122
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2911
+        }
+      ],
+      "id" : 50230,
+      "lessonNumber" : 263500,
+      "studentgroup" : "NE_FTIT2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 4
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 122
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2905
+        }
+      ],
+      "id" : 50233,
+      "lessonNumber" : 274900,
+      "studentgroup" : "NE_FTI2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 4
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 123
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2712
+        }
+      ],
+      "id" : 50236,
+      "lessonNumber" : 241400,
+      "studentgroup" : "PA_1BK2T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 111
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 125
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2962
+        }
+      ],
+      "id" : 50239,
+      "lessonNumber" : 242200,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 125
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2959
+        }
+      ],
+      "id" : 50245,
+      "lessonNumber" : 268200,
+      "studentgroup" : "PH_TGIE2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 72
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 125
+        }
+
+      ],
+      "klassen" : [
+        {
+          "id" : 2712
+        }
+      ],
+      "id" : 50248,
+      "lessonNumber" : 268500,
+      "studentgroup" : "PH_1BK2T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 76
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 126
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 50251,
+      "lessonNumber" : 243900,
+      "studentgroup" : "PH1_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 3,
+      "teachers" : [
+        {
+          "id" : 27
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 126
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 50254,
+      "lessonNumber" : 244800,
+      "studentgroup" : "PH1_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 3,
+      "teachers" : [
+        {
+          "id" : 76
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 128
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 50257,
+      "lessonNumber" : 244000,
+      "studentgroup" : "PH2_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 3,
+      "teachers" : [
+        {
+          "id" : 20
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 128
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 50260,
+      "lessonNumber" : 244900,
+      "studentgroup" : "PH2_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 3,
+      "teachers" : [
+        {
+          "id" : 27
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 137
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2712
+        }
+      ],
+      "id" : 50269,
+      "lessonNumber" : 269000,
+      "studentgroup" : "REL_1BK2T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 166
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 138
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2956
+        }
+      ],
+      "id" : 50275,
+      "lessonNumber" : 243200,
+      "studentgroup" : "S_TGIE1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 218
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 138
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2959
+        }
+      ],
+      "id" : 50278,
+      "lessonNumber" : 243700,
+      "studentgroup" : "S_TGIE2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 44
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 138
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2962
+        }
+      ],
+      "id" : 50281,
+      "lessonNumber" : 246900,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 139
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 50284,
+      "lessonNumber" : 161500,
+      "studentgroup" : "S1_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 218
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 139
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 50287,
+      "lessonNumber" : 244700,
+      "studentgroup" : "S1_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 218
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 140
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 50290,
+      "lessonNumber" : 246100,
+      "studentgroup" : "S2_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 218
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 140
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 50293,
+      "lessonNumber" : 283500,
+      "studentgroup" : "S2_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 44
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 141
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 50296,
+      "lessonNumber" : 246200,
+      "studentgroup" : "S3_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 44
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 141
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 50299,
+      "lessonNumber" : 283600,
+      "studentgroup" : "S3_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 218
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 142
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2803
+        }
+      ],
+      "id" : 51689,
+      "lessonNumber" : 303400,
+      "studentgroup" : "SAE_E2FI4",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 134
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 142
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2851
+        }
+      ],
+      "id" : 51692,
+      "lessonNumber" : 303700,
+      "studentgroup" : "SAE_E3FI4",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 134
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 146
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2902
+        }
+      ],
+      "id" : 50311,
+      "lessonNumber" : 205200,
+      "studentgroup" : "SE_FTI1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 72
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 146
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2911
+        }
+      ],
+      "id" : 50314,
+      "lessonNumber" : 267000,
+      "studentgroup" : "SE_FTIT2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 72
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 146
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2905
+        }
+      ],
+      "id" : 50317,
+      "lessonNumber" : 269900,
+      "studentgroup" : "SE_FTI2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 54
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 148
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2956
+        },
+        {
+          "id" : 2959
+        }
+      ],
+      "id" : 50320,
+      "lessonNumber" : 243300,
+      "studentgroup" : "SGT_TGIE1TGIE2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 24
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 149
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2803
+        }
+      ],
+      "id" : 51695,
+      "lessonNumber" : 303500,
+      "studentgroup" : "SOL_E2FI4",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 171
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2712
+        }
+      ],
+      "id" : 50335,
+      "lessonNumber" : 288800,
+      "studentgroup" : "VBL_1BK2T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 96
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 178
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2742
+        }
+      ],
+      "id" : 50362,
+      "lessonNumber" : 84400,
+      "studentgroup" : "WI_D3MB1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 64
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 178
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2745
+        }
+      ],
+      "id" : 50365,
+      "lessonNumber" : 84500,
+      "studentgroup" : "WI_D3MB2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 3,
+      "teachers" : [
+        {
+          "id" : 64
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 178
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2748
+        }
+      ],
+      "id" : 50368,
+      "lessonNumber" : 84600,
+      "studentgroup" : "WI_D3MB3AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 3,
+      "teachers" : [
+        {
+          "id" : 64
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 178
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2803
+        }
+      ],
+      "id" : 50371,
+      "lessonNumber" : 104400,
+      "studentgroup" : "WI_E2FI4",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 46
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 178
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2776
+        }
+      ],
+      "id" : 50395,
+      "lessonNumber" : 107800,
+      "studentgroup" : "WI_E1FS5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 167
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 178
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2866
+        }
+      ],
+      "id" : 50407,
+      "lessonNumber" : 236800,
+      "studentgroup" : "WI_E3FS2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 129
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 178
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2890
+        }
+      ],
+      "id" : 50410,
+      "lessonNumber" : 237500,
+      "studentgroup" : "WI_E3IT2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 39
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 178
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2881
+        }
+      ],
+      "id" : 50413,
+      "lessonNumber" : 240100,
+      "studentgroup" : "WI_E3FS7AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 129
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 178
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2848
+        }
+      ],
+      "id" : 50416,
+      "lessonNumber" : 240200,
+      "studentgroup" : "WI_E3FI3",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 39
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 178
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2842
+        }
+      ],
+      "id" : 50425,
+      "lessonNumber" : 248700,
+      "studentgroup" : "WI_E3FI1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 39
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 178
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2863
+        }
+      ],
+      "id" : 50440,
+      "lessonNumber" : 250900,
+      "studentgroup" : "WI_E3FS1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 129
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 178
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2845
+        }
+      ],
+      "id" : 50461,
+      "lessonNumber" : 263000,
+      "studentgroup" : "WI_E3FI2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 39
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 178
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2869
+        }
+      ],
+      "id" : 50470,
+      "lessonNumber" : 264500,
+      "studentgroup" : "WI_E3FS3AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 95
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 178
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2854
+        }
+      ],
+      "id" : 50473,
+      "lessonNumber" : 268600,
+      "studentgroup" : "WI_E3FI5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 39
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 178
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2878
+        }
+      ],
+      "id" : 50476,
+      "lessonNumber" : 272000,
+      "studentgroup" : "WI_E3FS6",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 95
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 178
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2875
+        }
+      ],
+      "id" : 50485,
+      "lessonNumber" : 274600,
+      "studentgroup" : "WI_E3FS5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 167
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 178
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2893
+        }
+      ],
+      "id" : 50488,
+      "lessonNumber" : 274800,
+      "studentgroup" : "WI_E3IT3AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 95
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 178
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2839
+        }
+      ],
+      "id" : 50506,
+      "lessonNumber" : 287500,
+      "studentgroup" : "WI_E3FA1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 39
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 178
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 3003
+        }
+      ],
+      "id" : 50428,
+      "lessonNumber" : 249200,
+      "studentgroup" : "WI_E3IE1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 3,
+      "teachers" : [
+        {
+          "id" : 64
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 179
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2959
+        }
+      ],
+      "id" : 50512,
+      "lessonNumber" : 273200,
+      "studentgroup" : "WIL_TGIE2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 96
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 179
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 50515,
+      "lessonNumber" : 276000,
+      "studentgroup" : "WIL_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 72
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 179
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2962
+        }
+      ],
+      "id" : 50518,
+      "lessonNumber" : 279900,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 179
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2956
+        }
+      ],
+      "id" : 50521,
+      "lessonNumber" : 280000,
+      "studentgroup" : "WIL_TGIE1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 72
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 188
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 50524,
+      "lessonNumber" : 256100,
+      "studentgroup" : "PHL1_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 3,
+      "teachers" : [
+        {
+          "id" : 76
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 188
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 50527,
+      "lessonNumber" : 268300,
+      "studentgroup" : "PHL1_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 3,
+      "teachers" : [
+        {
+          "id" : 27
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 189
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 50530,
+      "lessonNumber" : 256200,
+      "studentgroup" : "PHL2_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 3,
+      "teachers" : [
+        {
+          "id" : 27
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 189
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 50533,
+      "lessonNumber" : 268400,
+      "studentgroup" : "PHL2_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 3,
+      "teachers" : [
+        {
+          "id" : 20
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 190
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2911
+        }
+      ],
+
+      "id" : 50539,
+      "lessonNumber" : 290800,
+      "studentgroup" : "MC_FTIT2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 182
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 190
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2902
+        }
+      ],
+      "id" : 50536,
+      "lessonNumber" : 254400,
+      "studentgroup" : "MC_FTI1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 28
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 201
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 50545,
+      "lessonNumber" : 296800,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 17
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 201
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 50548,
+      "lessonNumber" : 296900,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 240
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 203
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2709
+        }
+      ],
+      "id" : 50551,
+      "lessonNumber" : 240500,
+      "studentgroup" : "MT-A_1BK1T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 111
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 204
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2709
+        }
+      ],
+      "id" : 50554,
+      "lessonNumber" : 240600,
+      "studentgroup" : "MT-B_1BK1T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 111
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 209
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2748
+        }
+      ],
+      "id" : 50560,
+      "lessonNumber" : 100400,
+      "studentgroup" : "Lernzeit_D3MB3AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 209
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2742
+        }
+      ],
+      "id" : 50572,
+      "lessonNumber" : 238900,
+      "studentgroup" : "Lernzeit_D3MB1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 3,
+      "teachers" : [
+
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 209
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2962
+        }
+      ],
+      "id" : 50575,
+      "lessonNumber" : 261600,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 8,
+      "teachers" : [
+
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 209
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2956
+        }
+      ],
+      "id" : 50581,
+      "lessonNumber" : 269200,
+      "studentgroup" : "Lernzeit_TGIE1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 8,
+      "teachers" : [
+        {
+          "id" : 8
+        },
+        {
+          "id" : 65
+        },
+        {
+          "id" : 172
+        },
+        {
+          "id" : 218
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 209
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2959
+        }
+      ],
+      "id" : 50584,
+      "lessonNumber" : 269300,
+      "studentgroup" : "Lernzeit_TGIE2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 8,
+      "teachers" : [
+        {
+          "id" : 9
+        },
+        {
+          "id" : 10
+        },
+        {
+          "id" : 96
+        },
+        {
+          "id" : 166
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 209
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2745
+        }
+      ],
+      "id" : 50590,
+      "lessonNumber" : 283400,
+      "studentgroup" : "Lernzeit_D3MB2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 3,
+      "teachers" : [
+
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 216
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2742
+        }
+      ],
+      "id" : 50617,
+      "lessonNumber" : 207900,
+      "studentgroup" : "BfK-T_D3MB1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 17,
+      "teachers" : [
+        {
+          "id" : 17
+        },
+        {
+          "id" : 78
+        },
+        {
+          "id" : 90
+        },
+        {
+          "id" : 240
+        },
+        {
+          "id" : 243
+        },
+        {
+          "id" : 246
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 216
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2745
+        }
+      ],
+      "id" : 50620,
+      "lessonNumber" : 208000,
+      "studentgroup" : "BfK-T_D3MB2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 16,
+      "teachers" : [
+        {
+          "id" : 17
+        },
+        {
+          "id" : 78
+        },
+        {
+          "id" : 90
+        },
+        {
+          "id" : 240
+        },
+        {
+          "id" : 243
+        },
+        {
+          "id" : 246
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 216
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2748
+        }
+      ],
+      "id" : 50623,
+      "lessonNumber" : 208100,
+      "studentgroup" : "BfK-T_D3MB3AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 16,
+      "teachers" : [
+        {
+          "id" : 17
+        },
+        {
+          "id" : 78
+        },
+        {
+          "id" : 90
+        },
+        {
+          "id" : 240
+        },
+        {
+          "id" : 243
+        },
+        {
+          "id" : 246
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 216
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 3003
+        }
+      ],
+      "id" : 50635,
+      "lessonNumber" : 280900,
+      "studentgroup" : "BfK-T_E3IE1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 16,
+      "teachers" : [
+        {
+          "id" : 4
+        },
+        {
+          "id" : 12
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 219
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2742
+        }
+      ],
+      "id" : 50665,
+      "lessonNumber" : 291700,
+      "studentgroup" : "BfK-TP_D3MB1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 9,
+      "teachers" : [
+        {
+          "id" : 17
+        },
+        {
+          "id" : 82
+        },
+        {
+          "id" : 240
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 219
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2745
+        }
+      ],
+      "id" : 50668,
+      "lessonNumber" : 291800,
+      "studentgroup" : "BfK-TP_D3MB2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 9,
+      "teachers" : [
+        {
+          "id" : 78
+        },
+        {
+          "id" : 82
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 219
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 3003
+        }
+      ],
+      "id" : 50647,
+      "lessonNumber" : 291100,
+      "studentgroup" : "BfK-TP_E3IE1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 11,
+      "teachers" : [
+        {
+          "id" : 4
+        },
+        {
+          "id" : 101
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 219
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2748
+        }
+      ],
+      "id" : 50644,
+      "lessonNumber" : 281300,
+      "studentgroup" : "BfK-TP_D3MB3AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 9,
+      "teachers" : [
+        {
+          "id" : 78
+        },
+        {
+          "id" : 82
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 226
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 50680,
+      "lessonNumber" : 101500,
+      "studentgroup" : "Coach_",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 8
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 226
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 50686,
+      "lessonNumber" : 102800,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 65
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 226
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 50695,
+      "lessonNumber" : 106200,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 9
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 226
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 50701,
+      "lessonNumber" : 160700,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 166
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 226
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 50704,
+      "lessonNumber" : 297400,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 218
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 226
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 50707,
+      "lessonNumber" : 297500,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 96
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 226
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 50710,
+      "lessonNumber" : 297800,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 10
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 226
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 50713,
+      "lessonNumber" : 297900,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 172
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 231
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 51674,
+      "lessonNumber" : 302300,
+      "studentgroup" : "SK1_TGIJ1_A",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 49
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 239
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 3003
+        }
+      ],
+      "id" : 50722,
+      "lessonNumber" : 270600,
+      "studentgroup" : "WPF-E_E3IE1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 10
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 246
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2709
+        }
+      ],
+      "id" : 50731,
+      "lessonNumber" : 279100,
+      "studentgroup" : "D-Stuetz_1BK1T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 111
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 264
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 50779,
+      "lessonNumber" : 275900,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 58
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 267
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2947
+        }
+      ],
+      "id" : 50782,
+      "lessonNumber" : 254100,
+      "studentgroup" : "RPS_Fach_RPS",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 40,
+      "teachers" : [
+        {
+          "id" : 32
+        },
+        {
+          "id" : 65
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 268
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 50785,
+      "lessonNumber" : 297000,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 240
+        }
+      ]
+    },
+    {
+
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 272
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 50794,
+      "lessonNumber" : 88600,
+      "studentgroup" : "ETH1_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 65
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 273
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 50797,
+      "lessonNumber" : 94000,
+      "studentgroup" : "ETH2_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 187
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 295
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2851
+        }
+      ],
+      "id" : 51812,
+      "lessonNumber" : 310600,
+      "studentgroup" : "BfK_E3FI4",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 57
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2863
+        }
+      ],
+      "id" : 50809,
+      "lessonNumber" : 17900,
+      "studentgroup" : "BfK-B_E3FS1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 21
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2872
+        }
+      ],
+      "id" : 50818,
+      "lessonNumber" : 18200,
+      "studentgroup" : "BfK-B_E3FS4",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 167
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2842
+        }
+      ],
+      "id" : 50830,
+      "lessonNumber" : 23400,
+      "studentgroup" : "BfK-B_E3FI1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 37
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2866
+        }
+      ],
+      "id" : 50842,
+      "lessonNumber" : 32300,
+      "studentgroup" : "BfK-B_E3FS2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 21
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2890
+        }
+      ],
+      "id" : 50845,
+      "lessonNumber" : 33100,
+      "studentgroup" : "BfK-B_E3IT2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 37
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2845
+        }
+      ],
+      "id" : 50848,
+      "lessonNumber" : 33600,
+      "studentgroup" : "BfK-B_E3FI2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 37
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2869
+        }
+      ],
+      "id" : 50854,
+      "lessonNumber" : 34700,
+      "studentgroup" : "BfK-B_E3FS3AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 21
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2989
+        }
+      ],
+      "id" : 50866,
+      "lessonNumber" : 53600,
+      "studentgroup" : "BfK-B_W3DM1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 36,
+
+      "teachers" : [
+        {
+          "id" : 38
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2806
+        }
+      ],
+      "id" : 50869,
+      "lessonNumber" : 56800,
+      "studentgroup" : "BfK-B_E2FI5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 167
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2971
+        }
+      ],
+      "id" : 50872,
+      "lessonNumber" : 57700,
+      "studentgroup" : "BfK-B_W1DM1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 30,
+      "teachers" : [
+        {
+          "id" : 38
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2974
+        }
+      ],
+      "id" : 50875,
+      "lessonNumber" : 58300,
+      "studentgroup" : "BfK-B_W1SY1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 30,
+      "teachers" : [
+        {
+          "id" : 98
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2977
+        }
+      ],
+      "id" : 50878,
+      "lessonNumber" : 58900,
+      "studentgroup" : "BfK-B_W1SY2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 30,
+      "teachers" : [
+        {
+          "id" : 225
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2980
+        }
+      ],
+      "id" : 50881,
+      "lessonNumber" : 64700,
+      "studentgroup" : "BfK-B_W2DM1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 30,
+      "teachers" : [
+        {
+          "id" : 38
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2983
+        }
+      ],
+      "id" : 50884,
+      "lessonNumber" : 65400,
+      "studentgroup" : "BfK-B_W2SY1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 30,
+      "teachers" : [
+        {
+          "id" : 98
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2986
+        }
+      ],
+      "id" : 50887,
+      "lessonNumber" : 74200,
+      "studentgroup" : "BfK-B_W2SY2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 30,
+      "teachers" : [
+        {
+          "id" : 225
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2763
+        }
+      ],
+      "id" : 50902,
+      "lessonNumber" : 110900,
+      "studentgroup" : "BfK-B_E1FI5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 167
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2776
+        }
+      ],
+      "id" : 50914,
+      "lessonNumber" : 115100,
+      "studentgroup" : "BfK-B_E1FS5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 167
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2878
+        }
+      ],
+      "id" : 50932,
+      "lessonNumber" : 238500,
+      "studentgroup" : "BfK-B_E3FS6",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 37
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2881
+        }
+      ],
+      "id" : 50938,
+      "lessonNumber" : 248000,
+      "studentgroup" : "BfK-B_E3FS7AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 98
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2839
+        }
+      ],
+      "id" : 50944,
+      "lessonNumber" : 271400,
+      "studentgroup" : "BfK-B_E3FA1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 102
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2893
+        }
+      ],
+      "id" : 50950,
+      "lessonNumber" : 274700,
+      "studentgroup" : "BfK-B_E3IT3AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 37
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2854
+        }
+      ],
+      "id" : 50953,
+      "lessonNumber" : 280100,
+      "studentgroup" : "BfK-B_E3FI5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 167
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2992
+        }
+      ],
+      "id" : 50821,
+      "lessonNumber" : 18300,
+      "studentgroup" : "BfK-B_W3SY1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 34,
+      "teachers" : [
+        {
+          "id" : 98
+
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 300
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2995
+        }
+      ],
+      "id" : 50824,
+      "lessonNumber" : 18600,
+      "studentgroup" : "BfK-B_W3SY2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 34,
+      "teachers" : [
+        {
+          "id" : 225
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 305
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2863
+        }
+      ],
+      "id" : 50968,
+      "lessonNumber" : 14700,
+      "studentgroup" : "BfK-I_E3FS1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 30,
+      "teachers" : [
+        {
+          "id" : 2
+        },
+        {
+          "id" : 21
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 305
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2872
+        }
+      ],
+      "id" : 50977,
+      "lessonNumber" : 21400,
+      "studentgroup" : "BfK-I_E3FS4",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 30,
+      "teachers" : [
+        {
+          "id" : 7
+        },
+        {
+          "id" : 58
+        },
+        {
+          "id" : 95
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 305
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2866
+        }
+      ],
+      "id" : 50992,
+      "lessonNumber" : 32500,
+      "studentgroup" : "BfK-I_E3FS2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 30,
+      "teachers" : [
+        {
+          "id" : 2
+        },
+        {
+          "id" : 21
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 305
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2890
+        }
+      ],
+      "id" : 50995,
+      "lessonNumber" : 33300,
+      "studentgroup" : "BfK-I_E3IT2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 28,
+      "teachers" : [
+        {
+          "id" : 106
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 305
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2869
+        }
+      ],
+      "id" : 51001,
+      "lessonNumber" : 34200,
+      "studentgroup" : "BfK-I_E3FS3AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 30,
+      "teachers" : [
+        {
+          "id" : 7
+        },
+        {
+          "id" : 59
+        },
+        {
+          "id" : 95
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 305
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2824
+        }
+      ],
+      "id" : 51007,
+      "lessonNumber" : 45100,
+      "studentgroup" : "BfK-I_E2FS5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 20,
+      "teachers" : [
+        {
+          "id" : 30
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 305
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2875
+        }
+      ],
+      "id" : 51013,
+      "lessonNumber" : 49000,
+      "studentgroup" : "BfK-I_E3FS5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 5,
+      "teachers" : [
+        {
+          "id" : 154
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 305
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2806
+        }
+      ],
+      "id" : 51016,
+      "lessonNumber" : 57300,
+      "studentgroup" : "BfK-I_E2FI5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 8,
+      "teachers" : [
+        {
+          "id" : 30
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 305
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2974
+        }
+      ],
+      "id" : 51022,
+      "lessonNumber" : 58700,
+      "studentgroup" : "BfK-I_W1SY1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 59
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 305
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2977
+        }
+      ],
+      "id" : 51025,
+      "lessonNumber" : 59300,
+      "studentgroup" : "BfK-I_W1SY2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 59
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 305
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2980
+        }
+      ],
+      "id" : 51028,
+      "lessonNumber" : 65200,
+      "studentgroup" : "BfK-I_W2DM1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 59
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 305
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2983
+        }
+      ],
+      "id" : 51031,
+      "lessonNumber" : 65900,
+      "studentgroup" : "BfK-I_W2SY1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 59
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 305
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2986
+        }
+      ],
+      "id" : 51034,
+      "lessonNumber" : 74300,
+      "studentgroup" : "BfK-I_W2SY2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 59
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 305
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2776
+        }
+      ],
+      "id" : 51055,
+      "lessonNumber" : 115200,
+      "studentgroup" : "BfK-I_E1FS5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 20,
+      "teachers" : [
+        {
+          "id" : 30
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 305
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2893
+        }
+      ],
+      "id" : 51079,
+      "lessonNumber" : 256000,
+      "studentgroup" : "BfK-I_E3IT3AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 28,
+      "teachers" : [
+        {
+          "id" : 106
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 305
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2878
+        }
+      ],
+      "id" : 51082,
+      "lessonNumber" : 258700,
+      "studentgroup" : "BfK-I_E3FS6",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 36,
+      "teachers" : [
+        {
+          "id" : 30
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 305
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2881
+        }
+      ],
+      "id" : 51085,
+      "lessonNumber" : 260100,
+      "studentgroup" : "BfK-I_E3FS7AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 36,
+      "teachers" : [
+        {
+          "id" : 32
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 305
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2854
+        }
+      ],
+      "id" : 51091,
+      "lessonNumber" : 281600,
+      "studentgroup" : "BfK-I_E3FI5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 30
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 305
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2848
+        }
+      ],
+      "id" : 51097,
+      "lessonNumber" : 293800,
+      "studentgroup" : "BfK-I_E3FI3",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 30
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 310
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2776
+        }
+      ],
+      "id" : 51130,
+      "lessonNumber" : 115300,
+      "studentgroup" : "BfK-L_E1FS5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 7
+        },
+        {
+          "id" : 101
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 310
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2824
+        }
+      ],
+      "id" : 51154,
+      "lessonNumber" : 259000,
+      "studentgroup" : "BfK-L_E2FS5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 7
+        },
+        {
+          "id" : 101
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 310
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2806
+        }
+      ],
+      "id" : 51163,
+      "lessonNumber" : 263100,
+      "studentgroup" : "BfK-L_E2FI5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 7
+        },
+        {
+          "id" : 101
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 310
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2893
+        }
+      ],
+      "id" : 51178,
+      "lessonNumber" : 282900,
+      "studentgroup" : "BfK-L_E3IT3AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 7
+        },
+        {
+          "id" : 101
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 311
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2992
+        }
+      ],
+      "id" : 51193,
+      "lessonNumber" : 17100,
+      "studentgroup" : "BfK-S_W3SY1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 35
+        },
+        {
+          "id" : 92
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 311
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2995
+        }
+      ],
+      "id" : 51196,
+      "lessonNumber" : 17200,
+      "studentgroup" : "BfK-S_W3SY2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 35
+        },
+        {
+          "id" : 92
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 311
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2848
+        }
+      ],
+      "id" : 51202,
+      "lessonNumber" : 17400,
+      "studentgroup" : "BfK-S_E3FI3",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 36,
+      "teachers" : [
+        {
+          "id" : 134
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 311
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2842
+        }
+      ],
+      "id" : 51214,
+      "lessonNumber" : 23900,
+      "studentgroup" : "BfK-S_E3FI1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 36,
+      "teachers" : [
+        {
+          "id" : 6
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 311
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2890
+        }
+      ],
+      "id" : 51229,
+      "lessonNumber" : 32900,
+      "studentgroup" : "BfK-S_E3IT2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 45
+        },
+        {
+          "id" : 95
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 311
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2845
+        }
+      ],
+      "id" : 51232,
+      "lessonNumber" : 33800,
+      "studentgroup" : "BfK-S_E3FI2AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 36,
+      "teachers" : [
+        {
+          "id" : 92
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 311
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2824
+        }
+      ],
+      "id" : 51236,
+      "lessonNumber" : 45300,
+      "studentgroup" : "BfK-S_E2FS5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 88
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 311
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2893
+        }
+      ],
+      "id" : 51242,
+      "lessonNumber" : 50100,
+      "studentgroup" : "BfK-S_E3IT3AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 10,
+      "teachers" : [
+        {
+          "id" : 45
+        },
+        {
+          "id" : 95
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 311
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2806
+        }
+      ],
+      "id" : 51245,
+      "lessonNumber" : 57500,
+      "studentgroup" : "BfK-S_E2FI5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 24,
+      "teachers" : [
+        {
+          "id" : 134
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 311
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2974
+        }
+      ],
+      "id" : 51248,
+      "lessonNumber" : 58800,
+      "studentgroup" : "BfK-S_W1SY1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 18,
+      "teachers" : [
+        {
+          "id" : 35
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 311
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2977
+        }
+      ],
+      "id" : 51251,
+      "lessonNumber" : 59400,
+      "studentgroup" : "BfK-S_W1SY2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 18,
+      "teachers" : [
+        {
+          "id" : 35
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 311
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2980
+        }
+      ],
+      "id" : 51254,
+      "lessonNumber" : 65300,
+      "studentgroup" : "BfK-S_W2DM1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 18,
+      "teachers" : [
+        {
+          "id" : 38
+        },
+        {
+          "id" : 64
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 311
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2986
+        }
+      ],
+      "id" : 51257,
+      "lessonNumber" : 74400,
+      "studentgroup" : "BfK-S_W2SY2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 18,
+      "teachers" : [
+        {
+          "id" : 35
+        },
+        {
+          "id" : 38
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 311
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2776
+        }
+      ],
+      "id" : 51281,
+      "lessonNumber" : 78900,
+      "studentgroup" : "BfK-S_E1FS5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 88
+        },
+        {
+          "id" : 95
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 311
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2971
+        }
+      ],
+      "id" : 51314,
+      "lessonNumber" : 268000,
+      "studentgroup" : "BfK-S_W1DM1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 18,
+      "teachers" : [
+        {
+          "id" : 35
+        },
+        {
+          "id" : 64
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 311
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2983
+        }
+      ],
+      "id" : 51323,
+      "lessonNumber" : 277700,
+      "studentgroup" : "BfK-S_W2SY1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 18,
+      "teachers" : [
+        {
+          "id" : 35
+        },
+        {
+          "id" : 92
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 311
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2854
+        }
+      ],
+      "id" : 51302,
+      "lessonNumber" : 233500,
+      "studentgroup" : "BfK-S_E3FI5",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 30,
+      "teachers" : [
+        {
+          "id" : 88
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 311
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2839
+        }
+      ],
+      "id" : 51305,
+      "lessonNumber" : 253400,
+      "studentgroup" : "BfK-S_E3FA1AT",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 36,
+      "teachers" : [
+        {
+          "id" : 88
+        },
+        {
+          "id" : 102
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 326
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2709
+        }
+      ],
+      "id" : 51332,
+      "lessonNumber" : 239600,
+      "studentgroup" : "AT-A_1BK1T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 172
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 326
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2712
+        }
+      ],
+      "id" : 51335,
+      "lessonNumber" : 298000,
+      "studentgroup" : "AT-A_1BK2T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 33
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 331
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2709
+        }
+      ],
+      "id" : 51338,
+      "lessonNumber" : 239700,
+      "studentgroup" : "AT-B_1BK1T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 172
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 331
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2712
+        }
+      ],
+      "id" : 51341,
+      "lessonNumber" : 298200,
+      "studentgroup" : "AT-B_1BK2T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 172
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 369
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2962
+        }
+      ],
+      "id" : 51344,
+      "lessonNumber" : 93500,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 369
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 51347,
+      "lessonNumber" : 236200,
+      "studentgroup" : "F-N_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 8
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 369
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 51350,
+      "lessonNumber" : 244600,
+      "studentgroup" : "F-N_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 8
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 369
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2956
+        },
+        {
+          "id" : 2959
+        }
+      ],
+      "id" : 51353,
+      "lessonNumber" : 285100,
+      "studentgroup" : "F-N_TGIE1TGIE2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 8
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 374
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2962
+        }
+      ],
+      "id" : 51356,
+      "lessonNumber" : 246400,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 377
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2962
+        }
+      ],
+      "id" : 51359,
+      "lessonNumber" : 9100,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 382
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2962
+        }
+      ],
+      "id" : 51362,
+      "lessonNumber" : 278300,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 387
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2905
+        }
+      ],
+      "id" : 51365,
+      "lessonNumber" : 281900,
+      "studentgroup" : "KI_FTI2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 27
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 397
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2956
+        },
+        {
+          "id" : 2959
+        }
+      ],
+      "id" : 51368,
+      "lessonNumber" : 42900,
+      "studentgroup" : "Sp-N1_TGIE1TGIE2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 10
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 397
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 51371,
+      "lessonNumber" : 215400,
+      "studentgroup" : "Sp-N1_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 161
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 397
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 51374,
+      "lessonNumber" : 215700,
+      "studentgroup" : "Sp-N1_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 86
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 402
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 51377,
+      "lessonNumber" : 227600,
+      "studentgroup" : "Sp-N2_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 161
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 402
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 51383,
+      "lessonNumber" : 283100,
+      "studentgroup" : "Sp-N2_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 86
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 441
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 51386,
+      "lessonNumber" : 88900,
+      "studentgroup" : "D1-L_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 49
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 441
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 51389,
+      "lessonNumber" : 245000,
+      "studentgroup" : "D1-L_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 49
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 446
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 51392,
+      "lessonNumber" : 89200,
+      "studentgroup" : "D2-G_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 96
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 446
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 51395,
+      "lessonNumber" : 245100,
+      "studentgroup" : "D2-G_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 86
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 451
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 51398,
+      "lessonNumber" : 89300,
+      "studentgroup" : "D3-G_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 9
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 451
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 51401,
+      "lessonNumber" : 245200,
+      "studentgroup" : "D3-G_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 9
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 466
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 51410,
+      "lessonNumber" : 286500,
+      "studentgroup" : "INF1-H_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 28
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 471
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2956
+        }
+      ],
+      "id" : 51413,
+      "lessonNumber" : 241900,
+      "studentgroup" : "INF1-S_TGIE1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 66
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 471
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 51419,
+      "lessonNumber" : 284600,
+      "studentgroup" : "INF1-S_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 33
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 479
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 51422,
+      "lessonNumber" : 284700,
+      "studentgroup" : "INF2-H_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 20
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 484
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 51428,
+      "lessonNumber" : 260400,
+      "studentgroup" : "INF2-S_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 66
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 484
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2959
+        }
+      ],
+      "id" : 51434,
+      "lessonNumber" : 293700,
+      "studentgroup" : "INF2-S_TGIE2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 33
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 494
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 51440,
+      "lessonNumber" : 286600,
+      "studentgroup" : "INF3-H_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 20
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 499
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 51443,
+      "lessonNumber" : 284800,
+      "studentgroup" : "INF3-S_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 66
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 509
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 51449,
+      "lessonNumber" : 88200,
+      "studentgroup" : "M1-G_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 231
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 509
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 51452,
+      "lessonNumber" : 245700,
+      "studentgroup" : "M1-G_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 134
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 514
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 51455,
+      "lessonNumber" : 87900,
+      "studentgroup" : "M2-L_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 187
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 514
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2968
+        }
+      ],
+      "id" : 51458,
+      "lessonNumber" : 245800,
+      "studentgroup" : "M2-L_TGIJ2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 187
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 519
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2965
+        }
+      ],
+      "id" : 51461,
+      "lessonNumber" : 88000,
+      "studentgroup" : "M3-L_TGIJ1",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 27
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 535
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2998
+        }
+      ],
+      "id" : 51464,
+      "lessonNumber" : 154600,
+      "studentgroup" : "ZSL-Fach_ZSL",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 36,
+      "teachers" : [
+        {
+          "id" : 77
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 535
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 51467,
+      "lessonNumber" : 302200,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 9,
+      "teachers" : [
+        {
+          "id" : 77
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 538
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2899
+        }
+      ],
+      "id" : 51470,
+      "lessonNumber" : 100700,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 40,
+      "teachers" : [
+        {
+          "id" : 154
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 552
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2709
+        }
+      ],
+      "id" : 51529,
+      "lessonNumber" : 265100,
+      "studentgroup" : "CH-A_1BK1T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 24
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 557
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2709
+        }
+      ],
+      "id" : 51532,
+      "lessonNumber" : 286200,
+      "studentgroup" : "CH-B_1BK1T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 24
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 572
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2709
+        }
+      ],
+      "id" : 51535,
+      "lessonNumber" : 284400,
+      "studentgroup" : "PO_1BK1T",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 8
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 593
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 51538,
+      "lessonNumber" : 221900,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 4,
+      "teachers" : [
+        {
+          "id" : 218
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 593
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 51811,
+      "lessonNumber" : 309200,
+      "studentgroup" : "Block-TG_",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 5,
+      "teachers" : [
+        {
+          "id" : 8
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 596
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 51541,
+      "lessonNumber" : 154100,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 95
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 596
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 51547,
+      "lessonNumber" : 232700,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 10,
+      "teachers" : [
+        {
+          "id" : 64
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 596
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 51550,
+      "lessonNumber" : 233900,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 6,
+      "teachers" : [
+        {
+          "id" : 59
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 596
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 51556,
+      "lessonNumber" : 259100,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 21,
+      "teachers" : [
+        {
+          "id" : 161
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 596
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 51559,
+      "lessonNumber" : 259900,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 10,
+      "teachers" : [
+        {
+          "id" : 2
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 596
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 51562,
+      "lessonNumber" : 276500,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 32,
+      "teachers" : [
+        {
+          "id" : 35
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 596
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 51565,
+      "lessonNumber" : 278700,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 98
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 596
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 51568,
+      "lessonNumber" : 280700,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 129
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 596
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 51571,
+      "lessonNumber" : 282100,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 15,
+      "teachers" : [
+        {
+          "id" : 102
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 596
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 51574,
+      "lessonNumber" : 285800,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 12,
+      "teachers" : [
+        {
+          "id" : 86
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 596
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 51580,
+      "lessonNumber" : 286300,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 10,
+      "teachers" : [
+        {
+          "id" : 92
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 596
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 51583,
+      "lessonNumber" : 288000,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 10,
+      "teachers" : [
+        {
+          "id" : 187
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 596
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 51586,
+      "lessonNumber" : 288500,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 15,
+      "teachers" : [
+        {
+          "id" : 119
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 596
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 51589,
+      "lessonNumber" : 290200,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 21,
+      "teachers" : [
+        {
+          "id" : 45
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 596
+        }
+      ],
+      "klassen" : [
+
+      ],
+      "id" : 51553,
+      "lessonNumber" : 254600,
+      "studentgroup" : "",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 14,
+      "teachers" : [
+        {
+          "id" : 21
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 602
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 3001
+        }
+      ],
+      "id" : 51595,
+      "lessonNumber" : 206300,
+      "studentgroup" : "ÖPR-Sitzung_ÖPR",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 27
+        },
+        {
+          "id" : 39
+        },
+        {
+          "id" : 64
+        },
+        {
+          "id" : 76
+        }
+      ]
+    },
+    {
+      "lstype" : "ls",
+      "subjects" : [
+        {
+          "id" : 603
+        }
+      ],
+      "klassen" : [
+        {
+          "id" : 2956
+        },
+        {
+          "id" : 2959
+        }
+      ],
+      "id" : 51598,
+      "lessonNumber" : 259200,
+      "studentgroup" : "Sp-NN_TGIE1TGIE2",
+      "startDate" : 20250915,
+      "endDate" : 20260729,
+      "activityType" : "Unterricht",
+      "hpw" : 2,
+      "teachers" : [
+        {
+          "id" : 10
+        }
+      ]
+    }
+  ],
+  "id" : "9DF67A64-89A3-49BA-AC13-4D91A6F7F50C",
+  "jsonrpc" : "2.0"
+}
+📊 Timetable result received (array format):
+📊 Array contains 352 items
+📊 First item keys: ["id", "startDate", "lessonNumber", "hpw", "endDate", "subjects", "studentgroup", "lstype", "klassen", "teachers", "activityType"]
+✅ Timetable loaded successfully with URL: https://mese.webuntis.com/WebUntis/jsonrpc.do?school=IT-Schule%20Stuttgart
+📊 Parsing timetable dictionary with keys: ["timetable"]
+📊 Found standard 'timetable' array with 352 periods
+⚠️ Detected lesson-definition fallback, reporting unsupported server

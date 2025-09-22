@@ -1,10 +1,40 @@
+import os
+from pathlib import Path
+
 import webuntis
 from datetime import datetime, timedelta
 
-server = 'mese.webuntis.com'
-school = 'IT-Schule+Stuttgart'
-username = 'noel.burkhardt'
-password = 'Noel2008'
+
+def load_env() -> None:
+    search_paths = [Path.cwd(), Path(__file__).resolve().parent]
+    for start in search_paths:
+        for candidate in [start] + list(start.parents):
+            env_file = candidate / ".env"
+            if env_file.exists():
+                for raw_line in env_file.read_text(encoding="utf-8").splitlines():
+                    line = raw_line.strip()
+                    if not line or line.startswith("#"):
+                        continue
+                    if "=" not in line:
+                        continue
+                    key, value = line.split("=", 1)
+                    os.environ.setdefault(key.strip(), value.strip())
+                return
+
+
+def require_env(key: str) -> str:
+    value = os.environ.get(key, "").strip()
+    if not value:
+        raise RuntimeError(f"Missing required environment variable '{key}'. Create a .env file based on .env.example before running this script.")
+    return value
+
+
+load_env()
+
+server = require_env("UNTIS_BASE_SERVER").replace("https://", "").replace("http://", "")
+school = require_env("UNTIS_SCHOOL").replace(" ", "+")
+username = require_env("UNTIS_USERNAME")
+password = require_env("UNTIS_PASSWORD")
 
 try:
     with webuntis.Session(

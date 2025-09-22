@@ -6,6 +6,34 @@ enum ElementType: Int, Codable, CaseIterable, Sendable {
     case subject = 3
     case room = 4
     case student = 5
+
+    var apiValue: String {
+        switch self {
+        case .klasse:
+            return "CLASS"
+        case .teacher:
+            return "TEACHER"
+        case .subject:
+            return "SUBJECT"
+        case .room:
+            return "ROOM"
+        case .student:
+            return "STUDENT"
+        }
+    }
+}
+
+extension ElementType {
+    init?(restType: String) {
+        switch restType.uppercased() {
+        case "CLASS": self = .klasse
+        case "TEACHER": self = .teacher
+        case "SUBJECT": self = .subject
+        case "ROOM": self = .room
+        case "STUDENT": self = .student
+        default: return nil
+        }
+    }
 }
 
 enum PeriodRight: String, Codable, CaseIterable, Sendable {

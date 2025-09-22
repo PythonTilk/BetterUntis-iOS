@@ -399,46 +399,65 @@ struct TimeSlotAvailability {
 }
 
 // MARK: - RoomFinder Repository
+@MainActor
 class RoomFinderRepository: ObservableObject {
     private let apiClient = UntisAPIClient()
     private let keychainManager = KeychainManager.shared
     private let timetableRepository = TimetableRepository()
+    private var restClients: [Int64: UntisRESTClient] = [:]
 
     @Published var availableRooms: [RoomAvailability] = []
     @Published var allRooms: [Room] = [] // Cache all rooms for quick access
 
     func findAvailableRooms(for user: User, date: Date, timeSlot: TimeSlot) async throws {
-        guard let credentials = keychainManager.loadUserCredentials(userId: String(user.id)) else {
+        guard keychainManager.loadUserCredentials(userId: String(user.id)) != nil else {
             throw RoomFinderError.missingCredentials
         }
 
-        // First, fetch all rooms if we haven't already
         if allRooms.isEmpty {
-            try await loadAllRooms(for: user, credentials: credentials)
+            try await loadAllRooms(for: user)
         }
 
-        // For now, we'll simulate availability since WebUntis doesn't have a direct
-        // "find available rooms" endpoint. In a full implementation, you would:
-        // 1. Get all rooms (done above)
-        // 2. Get timetable data for the specific date/time to see which rooms are occupied
-        // 3. Compare and return available rooms
+        let restClient = restClient(for: user)
+        if restClient.isAuthenticated {
+            do {
+                let response = try await fetchRoomsFromREST(client: restClient, date: date, timeSlot: timeSlot)
+                let (rooms, availability) = convertRoomsResponse(response, timeSlot: timeSlot)
 
-        print("🏢 Found \(allRooms.count) rooms for availability check")
+                await MainActor.run {
+                    if self.allRooms.isEmpty {
+                        self.allRooms = rooms.filter { $0.active }.sorted { $0.name < $1.name }
+                    }
+                    self.availableRooms = availability.sorted(by: sortRoomAvailability)
+                }
+                return
+            } catch {
+                print("⚠️ RoomFinder REST lookup failed: \(error.localizedDescription)")
+            }
+        } else {
+            print("ℹ️ REST token unavailable for RoomFinder; falling back to heuristic availability")
+        }
+
+        print("🏢 Using heuristic room availability for \(allRooms.count) rooms")
 
         let roomAvailabilities = allRooms.map { room in
             RoomAvailability(
                 room: room,
-                isAvailable: Bool.random(), // TODO: Implement real availability checking
+                isAvailable: Bool.random(),
                 timeline: generateTimelineForRoom(room, date: date)
             )
         }
 
         await MainActor.run {
-            self.availableRooms = roomAvailabilities.sorted { $0.isAvailable && !$1.isAvailable }
+            self.availableRooms = roomAvailabilities.sorted(by: sortRoomAvailability)
         }
     }
 
-    private func loadAllRooms(for user: User, credentials: UserCredentials) async throws {
+    private func loadAllRooms(for user: User) async throws {
+        guard let credentials = keychainManager.loadUserCredentials(userId: String(user.id)) else {
+            throw RoomFinderError.missingCredentials
+        }
+
         print("🔄 Loading rooms via direct API call (master data temporarily disabled)...")
 
         // TODO: Re-enable master data approach once Core Data model is updated
@@ -500,6 +519,102 @@ class RoomFinderRepository: ObservableObject {
         }
 
         print("📋 Loaded \(self.allRooms.count) active rooms from fallback API")
+    }
+
+    private func restClient(for user: User) -> UntisRESTClient {
+        if let cached = restClients[user.id] {
+            return cached
+        }
+
+        let serverURL = buildServerURL(from: user.apiHost)
+        let client = UntisRESTClient.create(for: serverURL, schoolName: user.schoolName)
+        restClients[user.id] = client
+        return client
+    }
+
+    private func buildServerURL(from apiHost: String) -> String {
+        var normalized = apiHost.trimmingCharacters(in: .whitespacesAndNewlines)
+        if normalized.isEmpty {
+            return "https://webuntis.com/WebUntis"
+        }
+
+        if !normalized.hasPrefix("http://") && !normalized.hasPrefix("https://") {
+            normalized = "https://" + normalized
+        }
+
+        guard var components = URLComponents(string: normalized) else {
+            return normalized
+        }
+
+        if components.scheme == nil {
+            components.scheme = "https"
+        }
+
+        var path = components.path
+        if let range = path.range(of: "/WebUntis", options: .caseInsensitive) {
+            path = String(path[..<range.upperBound])
+        } else {
+            if path.isEmpty || path == "/" {
+                path = "/WebUntis"
+            } else if path.hasSuffix("/") {
+                path += "WebUntis"
+            } else {
+                path += "/WebUntis"
+            }
+        }
+
+        components.path = path
+        components.query = nil
+        components.fragment = nil
+
+        return components.string ?? normalized
+    }
+
+    private func fetchRoomsFromREST(client: UntisRESTClient, date: Date, timeSlot: TimeSlot) async throws -> CalendarPeriodRoomResponse {
+        let start = combine(date: date, timeString: timeSlot.start)
+        let end = combine(date: date, timeString: timeSlot.end)
+        return try await client.getAvailableRooms(startDateTime: start, endDateTime: end)
+    }
+
+    private func convertRoomsResponse(_ response: CalendarPeriodRoomResponse, timeSlot: TimeSlot) -> ([Room], [RoomAvailability]) {
+        let rooms = response.rooms.map { detail in
+            Room(
+                id: detail.id,
+                name: detail.shortName,
+                longName: detail.longName,
+                active: detail.status != .removed,
+                building: detail.building?.displayName
+            )
+        }
+
+        let availability = zip(response.rooms, rooms).map { pair -> RoomAvailability in
+            let (detail, room) = pair
+            let isAvailable = detail.availability == .bookable || detail.availability == .reservable
+            let timeline = [
+                TimeSlotAvailability(timeSlot: timeSlot.start, isAvailable: isAvailable)
+            ]
+            return RoomAvailability(room: room, isAvailable: isAvailable, timeline: timeline)
+        }
+
+        return (rooms, availability)
+    }
+
+    private func combine(date: Date, timeString: String) -> Date {
+        let components = timeString.split(separator: ":")
+        guard components.count >= 2,
+              let hour = Int(components[0]),
+              let minute = Int(components[1]) else {
+            return date
+        }
+
+        return Calendar.current.date(bySettingHour: hour, minute: minute, second: 0, of: date) ?? date
+    }
+
+    private func sortRoomAvailability(_ lhs: RoomAvailability, _ rhs: RoomAvailability) -> Bool {
+        if lhs.isAvailable == rhs.isAvailable {
+            return lhs.room.name < rhs.room.name
+        }
+        return lhs.isAvailable && !rhs.isAvailable
     }
 
     private func generateTimelineForRoom(_ room: Room, date: Date) -> [TimeSlotAvailability] {

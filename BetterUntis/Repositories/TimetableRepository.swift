@@ -2,10 +2,12 @@ import Foundation
 import CoreData
 import Combine
 
+@MainActor
 class TimetableRepository: ObservableObject {
     private let apiClient = UntisAPIClient()
     private let persistenceController = PersistenceController.shared
     private let keychainManager = KeychainManager.shared
+    private var restClients: [Int64: UntisRESTClient] = [:]
 
     @Published var currentTimetable: Timetable?
     @Published var isLoading: Bool = false
@@ -19,14 +21,10 @@ class TimetableRepository: ObservableObject {
         endDate: Date,
         forceRefresh: Bool = false
     ) async throws {
-        await MainActor.run {
-            isLoading = true
-        }
+        isLoading = true
 
         defer {
-            Task { @MainActor in
-                isLoading = false
-            }
+            isLoading = false
         }
 
         // Try to load from cache first if not forcing refresh
@@ -45,6 +43,19 @@ class TimetableRepository: ObservableObject {
         // Load from API
         guard let credentials = keychainManager.loadUserCredentials(userId: String(user.id)) else {
             throw TimetableError.missingCredentials
+        }
+
+        do {
+            if let _ = try await loadTimetableViaREST(
+                for: user,
+                credentials: credentials,
+                startDate: startDate,
+                endDate: endDate
+            ) {
+                return
+            }
+        } catch {
+            print("⚠️ REST timetable fetch failed: \(error.localizedDescription)")
         }
 
         do {
@@ -97,10 +108,8 @@ class TimetableRepository: ObservableObject {
             // Cache the timetable
             try cacheTimetable(timetable, for: user)
 
-            await MainActor.run {
-                self.currentTimetable = timetable
-                self.lastUpdated = Date()
-            }
+            self.currentTimetable = timetable
+            self.lastUpdated = Date()
 
         } catch {
             throw error
@@ -195,13 +204,87 @@ class TimetableRepository: ObservableObject {
 
     // MARK: - Helper Methods
 
+    private func loadTimetableViaREST(
+        for user: User,
+        credentials: UserCredentials,
+        startDate: Date,
+        endDate: Date
+    ) async throws -> Timetable? {
+        guard let personId = credentials.personId else {
+            print("ℹ️ REST timetable requires personId; credentials missing this value")
+            return nil
+        }
+
+        let restClient = restClient(for: user)
+        guard restClient.isAuthenticated else {
+            print("ℹ️ REST client has no token for user \(user.id); skipping REST timetable")
+            return nil
+        }
+
+        let response = try await restClient.getTimetableEntries(
+            resourceType: .student,
+            resourceIds: [Int(personId)],
+            startDate: startDate,
+            endDate: endDate,
+            cacheMode: .onlineOnly,
+            format: 1,
+            periodTypes: nil,
+            timetableType: .myTimetable,
+            layout: .priority
+        )
+
+        let periods = restClient.convertTimetableEntriesToPeriods(
+            response,
+            resourceType: .student,
+            primaryResourceId: Int(personId)
+        )
+
+        let timetable = Timetable(
+            displayableStartDate: startDate,
+            displayableEndDate: endDate,
+            periods: periods
+        )
+
+        try cacheTimetable(timetable, for: user)
+        currentTimetable = timetable
+        lastUpdated = Date()
+        print("📅 Loaded \(periods.count) periods via REST timetable entries")
+        return timetable
+    }
+
+    private func restClient(for user: User) -> UntisRESTClient {
+        if let existing = restClients[user.id] {
+            return existing
+        }
+
+        let serverURL = buildServerURL(from: user.apiHost)
+        let client = UntisRESTClient.create(for: serverURL, schoolName: user.schoolName)
+        restClients[user.id] = client
+        return client
+    }
+
+    private func buildServerURL(from apiHost: String) -> String {
+        var normalized = apiHost.trimmingCharacters(in: .whitespacesAndNewlines)
+        if normalized.isEmpty {
+            return "https://webuntis.com"
+        }
+        if !normalized.hasPrefix("http://") && !normalized.hasPrefix("https://") {
+            normalized = "https://" + normalized
+        }
+        return normalized
+    }
+
     private func parseTimetableFromDict(_ dict: [String: Any], startDate: Date, endDate: Date) throws -> Timetable {
         print("📊 Parsing timetable dictionary with keys: \(Array(dict.keys))")
 
         // Check for server compatibility message
-        if let serverMessage = dict["serverMessage"] as? String {
+        let serverMessage = dict["serverMessage"] as? String
+        if let serverMessage {
             print("📋 Server message: \(serverMessage)")
         }
+
+        // Prepare master data lookup for element resolution
+        let masterDataIndex = buildMasterDataIndex(from: dict["masterData"] as? [String: Any])
 
         // Try different possible data structures
         var periodsArray: [[String: Any]]?
@@ -247,6 +330,14 @@ class TimetableRepository: ObservableObject {
             return Timetable(displayableStartDate: startDate, displayableEndDate: endDate, periods: [])
         }
 
+        if let firstPeriod = periodsData.first,
+           firstPeriod["date"] == nil,
+           (firstPeriod["startDate"] != nil || firstPeriod["lessonNumber"] != nil) {
+            print("⚠️ Detected lesson-definition fallback, reporting unsupported server")
+            let message = serverMessage ?? "This WebUntis server version only provides legacy lesson data. Timetable loading is not supported."
+            throw TimetableError.serverTooOld(message)
+        }
+
         if periodsData.isEmpty {
             print("⚠️ Timetable array is empty")
             return Timetable(displayableStartDate: startDate, displayableEndDate: endDate, periods: [])
@@ -259,13 +350,13 @@ class TimetableRepository: ObservableObject {
 
         for (index, periodDict) in periodsData.enumerated() {
             print("📊 Processing period \(index + 1): keys = \(Array(periodDict.keys))")
-            if let period = try? parsePeriodFromDict(periodDict, dateFormatter: dateFormatter) {
+            if let period = try? parsePeriodFromDict(periodDict, dateFormatter: dateFormatter, masterData: masterDataIndex) {
                 periods.append(period)
                 print("📊 Successfully parsed period \(index + 1)")
             } else {
                 print("⚠️ Failed to parse period \(index + 1)")
                 // Try to create a basic period with available data
-                if let basicPeriod = createBasicPeriodFromDict(periodDict, index: Int64(index)) {
+                if let basicPeriod = createBasicPeriodFromDict(periodDict, index: Int64(index), masterData: masterDataIndex) {
                     periods.append(basicPeriod)
                     print("📊 Created basic period \(index + 1)")
                 }
@@ -275,14 +366,19 @@ class TimetableRepository: ObservableObject {
         return Timetable(displayableStartDate: startDate, displayableEndDate: endDate, periods: periods)
     }
 
-    private func parsePeriodFromDict(_ dict: [String: Any], dateFormatter: DateFormatter) throws -> Period {
-        guard let id = dict["id"] as? Int64,
-              let lessonId = dict["lessonId"] as? Int64,
-              let date = dict["date"] as? String,
-              let startTime = dict["startTime"] as? String,
-              let endTime = dict["endTime"] as? String else {
+    private func parsePeriodFromDict(
+        _ dict: [String: Any],
+        dateFormatter: DateFormatter,
+        masterData: MasterDataIndex?
+    ) throws -> Period {
+        guard let id = int64(from: dict["id"]),
+              let date = normalizedDateString(from: dict["date"]),
+              let startTime = normalizedTimeString(from: dict["startTime"]),
+              let endTime = normalizedTimeString(from: dict["endTime"]) else {
             throw TimetableError.noDataAvailable
         }
+
+        let lessonId = int64(from: dict["lessonId"]) ?? id
 
         // Parse date and times
         guard let baseDate = dateFormatter.date(from: date) else {
@@ -294,23 +390,32 @@ class TimetableRepository: ObservableObject {
 
         let calendar = Calendar.current
 
-        var startDateTime = baseDate
-        if let startTimeDate = timeFormatter.date(from: startTime) {
-            let startComponents = calendar.dateComponents([.hour, .minute], from: startTimeDate)
-            startDateTime = calendar.date(bySettingHour: startComponents.hour ?? 0,
-                                        minute: startComponents.minute ?? 0,
-                                        second: 0,
-                                        of: baseDate) ?? baseDate
+        guard let startTimeDate = timeFormatter.date(from: startTime),
+              let endTimeDate = timeFormatter.date(from: endTime) else {
+            throw TimetableError.noDataAvailable
         }
 
-        var endDateTime = baseDate
-        if let endTimeDate = timeFormatter.date(from: endTime) {
-            let endComponents = calendar.dateComponents([.hour, .minute], from: endTimeDate)
-            endDateTime = calendar.date(bySettingHour: endComponents.hour ?? 0,
-                                      minute: endComponents.minute ?? 0,
-                                      second: 0,
-                                      of: baseDate) ?? baseDate
-        }
+        let startComponents = calendar.dateComponents([.hour, .minute], from: startTimeDate)
+        let endComponents = calendar.dateComponents([.hour, .minute], from: endTimeDate)
+
+        let startDateTime = calendar.date(bySettingHour: startComponents.hour ?? 0,
+                                          minute: startComponents.minute ?? 0,
+                                          second: 0,
+                                          of: baseDate) ?? baseDate
+
+        let endDateTime = calendar.date(bySettingHour: endComponents.hour ?? 0,
+                                        minute: endComponents.minute ?? 0,
+                                        second: 0,
+                                        of: baseDate) ?? baseDate
+
+        let subjects = periodElements(from: dict["su"], type: .subject, masterData: masterData)
+        let teachers = periodElements(from: dict["te"], type: .teacher, masterData: masterData)
+        let classes = periodElements(from: dict["kl"], type: .klasse, masterData: masterData)
+        let rooms = periodElements(from: dict["ro"], type: .room, masterData: masterData)
+        let allElements = classes + teachers + subjects + rooms
+
+        let lessonTextValue = lessonTitle(subjectElements: subjects, periodDict: dict)
+        let infoText = trimmed(dict["info"] as? String)
 
         return Period(
             id: id,
@@ -322,11 +427,11 @@ class TimetableRepository: ObservableObject {
             innerForeColor: dict["innerForeColor"] as? String ?? "#000000",
             innerBackColor: dict["innerBackColor"] as? String ?? "#FFFFFF",
             text: PeriodText(
-                lesson: (dict["su"] as? [String])?.joined(separator: ", "),
+                lesson: lessonTextValue,
                 substitution: nil,
-                info: dict["info"] as? String
+                info: infoText
             ),
-            elements: [],
+            elements: allElements,
             can: [],
             is: [],
             homeWorks: nil,
@@ -338,98 +443,73 @@ class TimetableRepository: ObservableObject {
         )
     }
 
-    private func createBasicPeriodFromDict(_ dict: [String: Any], index: Int64) -> Period? {
+    private func createBasicPeriodFromDict(
+        _ dict: [String: Any],
+        index: Int64,
+        masterData: MasterDataIndex?
+    ) -> Period? {
         print("📊 Attempting to create basic period from dict: \(dict)")
 
         // Try to extract basic information with flexible field names
-        let id = (dict["id"] as? Int64)
-               ?? (dict["periodId"] as? Int64)
-               ?? (dict["lessonId"] as? Int64)
-               ?? index
+        let id = int64(from: dict["id"]) ??
+                 int64(from: dict["periodId"]) ??
+                 int64(from: dict["lessonId"]) ??
+                 index
 
-        let lessonId = (dict["lessonId"] as? Int64)
-                    ?? (dict["id"] as? Int64)
-                    ?? index
+        let lessonId = int64(from: dict["lessonId"]) ??
+                       int64(from: dict["id"]) ??
+                       index
 
         // Try different date/time field combinations
         var startDateTime = Date()
-        var endDateTime = Date()
+        var endDateTime = startDateTime.addingTimeInterval(3600)
 
-        // Look for various date/time formats
-        if let dateStr = dict["date"] as? String,
-           let startTimeStr = dict["startTime"] as? String,
-           let endTimeStr = dict["endTime"] as? String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMdd"
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "HHmm"
+        let calendar = Calendar.current
 
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyyMMdd"
+        if let dateString = normalizedDateString(from: dict["date"]) ?? normalizedDateString(from: dict["startDate"]),
+           let baseDate = dateFormatter.date(from: dateString) {
 
-            if let baseDate = dateFormatter.date(from: dateStr) {
-                let timeFormatter = DateFormatter()
-                timeFormatter.dateFormat = "HHmm"
+            startDateTime = baseDate
+            endDateTime = baseDate.addingTimeInterval(3600)
 
-                let calendar = Calendar.current
-
-                if let startTime = timeFormatter.date(from: startTimeStr) {
-                    let components = calendar.dateComponents([.hour, .minute], from: startTime)
-                    startDateTime = calendar.date(bySettingHour: components.hour ?? 8,
-                                                minute: components.minute ?? 0,
-                                                second: 0,
-                                                of: baseDate) ?? baseDate
-                }
-
-                if let endTime = timeFormatter.date(from: endTimeStr) {
-                    let components = calendar.dateComponents([.hour, .minute], from: endTime)
-                    endDateTime = calendar.date(bySettingHour: components.hour ?? 9,
-                                              minute: components.minute ?? 0,
+            if let startTimeString = normalizedTimeString(from: dict["startTime"]),
+               let startTimeDate = timeFormatter.date(from: startTimeString) {
+                let startComponents = calendar.dateComponents([.hour, .minute], from: startTimeDate)
+                startDateTime = calendar.date(bySettingHour: startComponents.hour ?? 8,
+                                              minute: startComponents.minute ?? 0,
                                               second: 0,
-                                              of: baseDate) ?? baseDate.addingTimeInterval(3600)
-                }
+                                              of: baseDate) ?? baseDate
             }
-        } else {
-            // Fallback to current time if no date info
-            startDateTime = Date()
-            endDateTime = startDateTime.addingTimeInterval(3600) // 1 hour later
-        }
 
-        // Extract text/subject information - handle getLessons format
-        var lessonText = ""
-
-        // Try studentgroup field (common in getLessons response)
-        if let studentGroup = dict["studentgroup"] as? String {
-            lessonText = studentGroup
-        }
-        // Try activity type
-        else if let activityType = dict["activityType"] as? String {
-            lessonText = activityType
-        }
-        // Try subjects array with name resolution
-        else if let subjects = dict["subjects"] as? [[String: Any]], !subjects.isEmpty {
-            let subjectNames = subjects.compactMap { $0["name"] as? String }
-            if !subjectNames.isEmpty {
-                lessonText = subjectNames.joined(separator: ", ")
-            } else {
-                // Fallback to subject IDs
-                let subjectIds = subjects.compactMap { $0["id"] as? Int }
-                lessonText = "Subject \(subjectIds.map(String.init).joined(separator: ", "))"
+            if let endTimeString = normalizedTimeString(from: dict["endTime"]),
+               let endTimeDate = timeFormatter.date(from: endTimeString) {
+                let endComponents = calendar.dateComponents([.hour, .minute], from: endTimeDate)
+                endDateTime = calendar.date(bySettingHour: endComponents.hour ?? 9,
+                                            minute: endComponents.minute ?? 0,
+                                            second: 0,
+                                            of: baseDate) ?? baseDate.addingTimeInterval(3600)
             }
         }
-        // Try legacy su field
-        else if let subjects = (dict["su"] as? [String]) ?? (dict["subjects"] as? [String]), !subjects.isEmpty {
-            lessonText = subjects.joined(separator: ", ")
-        }
-        // Ultimate fallback
-        else {
-            lessonText = "Course \(index + 1)"
+
+        let subjects = periodElements(from: dict["su"], type: .subject, masterData: masterData)
+        let teachers = periodElements(from: dict["te"], type: .teacher, masterData: masterData)
+        let classes = periodElements(from: dict["kl"], type: .klasse, masterData: masterData)
+        let rooms = periodElements(from: dict["ro"], type: .room, masterData: masterData)
+        let allElements = classes + teachers + subjects + rooms
+
+        var lessonTextValue = lessonTitle(subjectElements: subjects, periodDict: dict) ?? "Course \(index + 1)"
+
+        if let hpw = intValue(from: dict["hpw"]), hpw > 0 {
+            lessonTextValue += " (\(hpw)h/week)"
         }
 
-        // Add hours per week info if available
-        if let hpw = dict["hpw"] as? Int, hpw > 0 {
-            lessonText += " (\(hpw)h/week)"
-        }
+        let info = trimmed(dict["info"] as? String)
 
-        let info = dict["info"] as? String
-
-        print("📊 Creating basic period: id=\(id), lesson=\(lessonText), start=\(startDateTime), end=\(endDateTime)")
+        print("📊 Creating basic period: id=\(id), lesson=\(lessonTextValue), start=\(startDateTime), end=\(endDateTime)")
 
         return Period(
             id: id,
@@ -441,11 +521,11 @@ class TimetableRepository: ObservableObject {
             innerForeColor: dict["innerForeColor"] as? String ?? "#000000",
             innerBackColor: dict["innerBackColor"] as? String ?? "#FFFFFF",
             text: PeriodText(
-                lesson: lessonText,
+                lesson: lessonTextValue,
                 substitution: nil,
                 info: info
             ),
-            elements: [],
+            elements: allElements,
             can: [],
             is: [],
             homeWorks: nil,
@@ -455,6 +535,253 @@ class TimetableRepository: ObservableObject {
             onlinePeriodLink: dict["onlinePeriodLink"] as? String,
             blockHash: dict["blockHash"] as? Int
         )
+    }
+
+    // MARK: - Parsing Helpers
+
+    private func int64(from value: Any?) -> Int64? {
+        if let int64Value = value as? Int64 { return int64Value }
+        if let intValue = value as? Int { return Int64(intValue) }
+        if let number = value as? NSNumber { return number.int64Value }
+        if let string = value as? String, let parsed = Int64(string.trimmingCharacters(in: .whitespacesAndNewlines)) {
+            return parsed
+        }
+        return nil
+    }
+
+    private func intValue(from value: Any?) -> Int? {
+        if let intValue = value as? Int { return intValue }
+        if let number = value as? NSNumber { return number.intValue }
+        if let string = value as? String, let parsed = Int(string.trimmingCharacters(in: .whitespacesAndNewlines)) {
+            return parsed
+        }
+        return nil
+    }
+
+    private func normalizedDateString(from value: Any?) -> String? {
+        if let string = value as? String {
+            let digits = string.filter { $0.isNumber }
+            if digits.count == 8 { return digits }
+            if let parsed = Int64(digits) {
+                return String(format: "%08lld", parsed)
+            }
+        }
+
+        if let number = value as? NSNumber {
+            return String(format: "%08lld", number.int64Value)
+        }
+
+        if let int64Value = value as? Int64 {
+            return String(format: "%08lld", int64Value)
+        }
+
+        if let intValue = value as? Int {
+            return String(format: "%08d", intValue)
+        }
+
+        return nil
+    }
+
+    private func normalizedTimeString(from value: Any?) -> String? {
+        if let string = value as? String {
+            let digits = string.filter { $0.isNumber }
+            guard !digits.isEmpty else { return nil }
+            if let parsed = Int(digits) {
+                return String(format: "%04d", parsed)
+            }
+        }
+
+        if let number = value as? NSNumber {
+            return String(format: "%04d", number.intValue)
+        }
+
+        if let int64Value = value as? Int64 {
+            return String(format: "%04lld", int64Value)
+        }
+
+        if let intValue = value as? Int {
+            return String(format: "%04d", intValue)
+        }
+
+        return nil
+    }
+
+    private func lessonTitle(subjectElements: [PeriodElement], periodDict: [String: Any]) -> String? {
+        let subjectNames = subjectElements.map(elementDisplayName).filter { !$0.isEmpty }
+        if !subjectNames.isEmpty {
+            return subjectNames.joined(separator: ", ")
+        }
+
+        if let studentGroup = trimmed(periodDict["studentgroup"] as? String) {
+            return studentGroup
+        }
+
+        if let activityType = trimmed(periodDict["activityType"] as? String) {
+            return activityType
+        }
+
+        if let text = trimmed(periodDict["text"] as? String) {
+            return text
+        }
+
+        return nil
+    }
+
+    private func periodElements(
+        from rawValue: Any?,
+        type: ElementType,
+        masterData: MasterDataIndex?
+    ) -> [PeriodElement] {
+        if let dictionaries = rawValue as? [[String: Any]] {
+            return dictionaries.compactMap { elementDict in
+                guard let id = int64(from: elementDict["id"]) else { return nil }
+                let entry = masterData?.entry(for: type, id: id)
+                return makePeriodElement(id: id, type: type, dict: elementDict, masterEntry: entry)
+            }
+        }
+
+        let ids: [Int64]
+        if let rawIds = rawValue as? [Int64] {
+            ids = rawIds
+        } else if let rawInts = rawValue as? [Int] {
+            ids = rawInts.map(Int64.init)
+        } else if let rawStrings = rawValue as? [String] {
+            ids = rawStrings.compactMap { Int64($0) }
+        } else {
+            return []
+        }
+
+        return ids.compactMap { id in
+            let entry = masterData?.entry(for: type, id: id)
+            return makePeriodElement(id: id, type: type, dict: nil, masterEntry: entry)
+        }
+    }
+
+    private func makePeriodElement(
+        id: Int64,
+        type: ElementType,
+        dict: [String: Any]?,
+        masterEntry: MasterDataEntry?
+    ) -> PeriodElement {
+        let fallbackName = "#\(id)"
+        let name = masterEntry?.name
+            ?? trimmed(dict?["name"] as? String)
+            ?? fallbackName
+        let longName = masterEntry?.longName
+            ?? trimmed(dict?["longName"] as? String ?? dict?["longname"] as? String)
+        let displayName = masterEntry?.displayName
+            ?? trimmed(dict?["displayName"] as? String ?? dict?["displayname"] as? String)
+            ?? longName
+            ?? name
+        let alternateName = masterEntry?.alternateName
+            ?? trimmed(dict?["shortName"] as? String ?? dict?["shortname"] as? String)
+        let foreColor = masterEntry?.foreColor ?? stringValue(from: dict?["foreColor"])
+        let backColor = masterEntry?.backColor ?? stringValue(from: dict?["backColor"])
+        let canViewTimetable = masterEntry?.canViewTimetable ?? (dict?["canViewTimetable"] as? Bool)
+
+        return PeriodElement(
+            type: type,
+            id: id,
+            name: name,
+            longName: longName ?? name,
+            displayName: displayName,
+            alternateName: alternateName,
+            backColor: backColor,
+            foreColor: foreColor,
+            canViewTimetable: canViewTimetable
+        )
+    }
+
+    private func buildMasterDataIndex(from masterDataDict: [String: Any]?) -> MasterDataIndex? {
+        guard let masterDataDict else { return nil }
+        var index = MasterDataIndex()
+
+        if let classes = masterDataDict["klassen"] as? [[String: Any]] {
+            for klass in classes {
+                guard let entry = parseMasterDataEntry(type: .klasse, data: klass) else { continue }
+                index.classes[entry.id] = entry
+            }
+        }
+
+        if let teachers = masterDataDict["teachers"] as? [[String: Any]] {
+            for teacher in teachers {
+                guard let entry = parseMasterDataEntry(type: .teacher, data: teacher) else { continue }
+                index.teachers[entry.id] = entry
+            }
+        }
+
+        if let subjects = masterDataDict["subjects"] as? [[String: Any]] {
+            for subject in subjects {
+                guard let entry = parseMasterDataEntry(type: .subject, data: subject) else { continue }
+                index.subjects[entry.id] = entry
+            }
+        }
+
+        if let rooms = masterDataDict["rooms"] as? [[String: Any]] {
+            for room in rooms {
+                guard let entry = parseMasterDataEntry(type: .room, data: room) else { continue }
+                index.rooms[entry.id] = entry
+            }
+        }
+
+        return index.isEmpty ? nil : index
+    }
+
+    private func parseMasterDataEntry(type: ElementType, data: [String: Any]) -> MasterDataEntry? {
+        guard let id = int64(from: data["id"]) else { return nil }
+
+        let name = trimmed(data["name"] as? String) ?? "#\(id)"
+        var longName = trimmed(data["longName"] as? String ?? data["longname"] as? String)
+        var displayName = trimmed(data["displayName"] as? String ?? data["displayname"] as? String)
+        let shortName = trimmed(data["shortName"] as? String ?? data["shortname"] as? String)
+
+        if type == .teacher {
+            let firstName = trimmed(data["firstName"] as? String ?? data["firstname"] as? String)
+            let lastName = trimmed(data["lastName"] as? String ?? data["lastname"] as? String)
+            let combined = [firstName, lastName].compactMap { $0 }.joined(separator: " ")
+            if !combined.isEmpty {
+                longName = combined
+                if displayName == nil {
+                    displayName = combined
+                }
+            }
+        }
+
+        if displayName == nil {
+            displayName = longName ?? name
+        }
+
+        let foreColor = stringValue(from: data["foreColor"])
+        let backColor = stringValue(from: data["backColor"])
+        let canViewTimetable = data["canViewTimetable"] as? Bool
+
+        return MasterDataEntry(
+            id: id,
+            name: name,
+            longName: longName,
+            displayName: displayName,
+            alternateName: shortName,
+            foreColor: foreColor,
+            backColor: backColor,
+            canViewTimetable: canViewTimetable
+        )
+    }
+
+    private func stringValue(from value: Any?) -> String? {
+        if let string = value as? String { return trimmed(string) }
+        if let number = value as? NSNumber { return number.stringValue }
+        return nil
+    }
+
+    private func elementDisplayName(_ element: PeriodElement) -> String {
+        return element.displayName ?? element.longName
+    }
+
+    private func trimmed(_ string: String?) -> String? {
+        guard let string = string?.trimmingCharacters(in: .whitespacesAndNewlines), !string.isEmpty else {
+            return nil
+        }
+        return string
     }
 
     // MARK: - Period Details
@@ -584,6 +911,43 @@ class TimetableRepository: ObservableObject {
 }
 
 // MARK: - Supporting Types
+
+private struct MasterDataEntry {
+    let id: Int64
+    let name: String
+    let longName: String?
+    let displayName: String?
+    let alternateName: String?
+    let foreColor: String?
+    let backColor: String?
+    let canViewTimetable: Bool?
+}
+
+private struct MasterDataIndex {
+    var classes: [Int64: MasterDataEntry] = [:]
+    var teachers: [Int64: MasterDataEntry] = [:]
+    var subjects: [Int64: MasterDataEntry] = [:]
+    var rooms: [Int64: MasterDataEntry] = [:]
+
+    func entry(for type: ElementType, id: Int64) -> MasterDataEntry? {
+        switch type {
+        case .klasse:
+            return classes[id]
+        case .teacher:
+            return teachers[id]
+        case .subject:
+            return subjects[id]
+        case .room:
+            return rooms[id]
+        case .student:
+            return nil
+        }
+    }
+
+    var isEmpty: Bool {
+        classes.isEmpty && teachers.isEmpty && subjects.isEmpty && rooms.isEmpty
+    }
+}
 
 enum TimetableError: Error, LocalizedError {
     case missingCredentials

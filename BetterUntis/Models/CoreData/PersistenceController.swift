@@ -158,6 +158,31 @@ extension PersistenceController {
         backColorAttribute.attributeType = .stringAttributeType
         backColorAttribute.isOptional = false
 
+        let innerForeColorAttribute = NSAttributeDescription()
+        innerForeColorAttribute.name = "innerForeColor"
+        innerForeColorAttribute.attributeType = .stringAttributeType
+        innerForeColorAttribute.isOptional = true
+
+        let innerBackColorAttribute = NSAttributeDescription()
+        innerBackColorAttribute.name = "innerBackColor"
+        innerBackColorAttribute.attributeType = .stringAttributeType
+        innerBackColorAttribute.isOptional = true
+
+        let lessonTextAttribute = NSAttributeDescription()
+        lessonTextAttribute.name = "lessonText"
+        lessonTextAttribute.attributeType = .stringAttributeType
+        lessonTextAttribute.isOptional = true
+
+        let substitutionTextAttribute = NSAttributeDescription()
+        substitutionTextAttribute.name = "substitutionText"
+        substitutionTextAttribute.attributeType = .stringAttributeType
+        substitutionTextAttribute.isOptional = true
+
+        let infoTextAttribute = NSAttributeDescription()
+        infoTextAttribute.name = "infoText"
+        infoTextAttribute.attributeType = .stringAttributeType
+        infoTextAttribute.isOptional = true
+
         let userIdForeignKey = NSAttributeDescription()
         userIdForeignKey.name = "userId"
         userIdForeignKey.attributeType = .integer64AttributeType
@@ -170,6 +195,11 @@ extension PersistenceController {
             endDateTimeAttribute,
             foreColorAttribute,
             backColorAttribute,
+            innerForeColorAttribute,
+            innerBackColorAttribute,
+            lessonTextAttribute,
+            substitutionTextAttribute,
+            infoTextAttribute,
             userIdForeignKey
         ]
 
