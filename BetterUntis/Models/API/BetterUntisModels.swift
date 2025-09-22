@@ -296,6 +296,19 @@ enum RESTCacheMode: String, Codable {
     case offlineOnly = "OFFLINE_ONLY"
     case onlineOnly = "ONLINE_ONLY"
     case fullCache = "FULL_CACHE"
+
+    var cacheControlValue: String {
+        switch self {
+        case .noCache:
+            return "no-store"
+        case .offlineOnly:
+            return "only-if-cached"
+        case .onlineOnly:
+            return "no-cache"
+        case .fullCache:
+            return "public, max-age=60"
+        }
+    }
 }
 
 enum RESTTimetableLayout: String, Codable {

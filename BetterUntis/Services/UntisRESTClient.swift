@@ -11,6 +11,7 @@ class UntisRESTClient: ObservableObject {
     private let keychain: KeychainManager
     private var baseURL: String
     private var schoolName: String
+    private var tokenIdentifier: String
 
     @Published var isAuthenticated = false
     @Published var authToken: String?
@@ -59,11 +60,22 @@ class UntisRESTClient: ObservableObject {
 
     // MARK: - Initialization
 
-    init(baseURL: String, schoolName: String, keychain: KeychainManager = KeychainManager.shared) {
-        self.session = URLSession.shared
+    init(
+        baseURL: String,
+        schoolName: String,
+        tokenIdentifier: String? = nil,
+        keychain: KeychainManager = KeychainManager.shared,
+        session: URLSession = .shared
+    ) {
+        self.session = session
         self.keychain = keychain
-        self.baseURL = baseURL.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        self.baseURL = UntisRESTClient.normalizeBaseURL(baseURL)
         self.schoolName = schoolName
+        self.tokenIdentifier = UntisRESTClient.makeTokenIdentifier(
+            baseURL: self.baseURL,
+            schoolName: schoolName,
+            userIdentifier: tokenIdentifier
+        )
 
         // Load stored token
         loadStoredToken()
@@ -224,7 +236,7 @@ class UntisRESTClient: ObservableObject {
         resourceIds: [Int],
         startDate: Date,
         endDate: Date,
-        cacheMode: RESTCacheMode = .offlineOnly,
+        cacheMode: RESTCacheMode = .noCache,
         format: Int? = nil,
         periodTypes: [String]? = nil,
         timetableType: RESTTimetableType? = nil,
@@ -235,10 +247,8 @@ class UntisRESTClient: ObservableObject {
             throw UntisAPIError(code: 401, message: "Not authenticated", details: "No auth token available", timestamp: Date())
         }
 
-        let startOfDay = Calendar.current.startOfDay(for: startDate)
-        let endOfDay = Calendar.current.date(bySettingHour: 23, minute: 59, second: 59, of: endDate) ?? endDate
-        let startString = DateFormatter.untisDateTime.string(from: startOfDay)
-        let endString = DateFormatter.untisDateTime.string(from: endOfDay)
+        let startString = DateFormatter.untisDate.string(from: startDate)
+        let endString = DateFormatter.untisDate.string(from: endDate)
 
         var components = URLComponents(string: baseURL + "/WebUntis/api/rest/view/v1/timetable/entries")!
         var queryItems: [URLQueryItem] = [
@@ -275,6 +285,7 @@ class UntisRESTClient: ObservableObject {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue(cacheMode.rawValue, forHTTPHeaderField: "Cache-Mode")
+        request.setValue(cacheMode.cacheControlValue, forHTTPHeaderField: "Cache-Control")
 
         print("📅 REST Timetable entries request: \(url)")
 
@@ -306,7 +317,7 @@ class UntisRESTClient: ObservableObject {
     func getAvailableRooms(
         startDateTime: Date,
         endDateTime: Date,
-        cacheMode: RESTCacheMode = .offlineOnly
+        cacheMode: RESTCacheMode = .noCache
     ) async throws -> CalendarPeriodRoomResponse {
 
         guard let token = authToken else {
@@ -331,6 +342,7 @@ class UntisRESTClient: ObservableObject {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue(cacheMode.rawValue, forHTTPHeaderField: "Cache-Mode")
+        request.setValue(cacheMode.cacheControlValue, forHTTPHeaderField: "Cache-Control")
 
         print("🏫 REST Room finder request: \(url)")
 
@@ -429,25 +441,48 @@ class UntisRESTClient: ObservableObject {
     // MARK: - Token Management
 
     private func loadStoredToken() {
-        if let token = keychain.loadString(forKey: "untis_rest_token_\(schoolName)") {
-            authToken = token
-            isAuthenticated = true
-            print("🔑 Loaded stored REST token for \(schoolName)")
+        guard let token = keychain.loadString(forKey: tokenStorageKey) else {
+            authToken = nil
+            isAuthenticated = false
+            return
         }
+
+        authToken = token
+        isAuthenticated = true
+        print("🔑 Loaded stored REST token for scope: \(tokenIdentifier)")
     }
 
     private func storeToken(_ token: String) async {
         authToken = token
         isAuthenticated = true
-        keychain.save(string: token, forKey: "untis_rest_token_\(schoolName)")
-        print("🔑 Stored REST token for \(schoolName)")
+        keychain.save(string: token, forKey: tokenStorageKey)
+        print("🔑 Stored REST token for scope: \(tokenIdentifier)")
     }
 
     func clearToken() {
         authToken = nil
         isAuthenticated = false
-        keychain.deleteString(forKey: "untis_rest_token_\(schoolName)")
-        print("🔑 Cleared REST token for \(schoolName)")
+        keychain.deleteString(forKey: tokenStorageKey)
+        print("🔑 Cleared REST token for scope: \(tokenIdentifier)")
+    }
+
+    func updateTokenScope(userIdentifier: String?) {
+        let newIdentifier = UntisRESTClient.makeTokenIdentifier(
+            baseURL: baseURL,
+            schoolName: schoolName,
+            userIdentifier: userIdentifier
+        )
+
+        guard newIdentifier != tokenIdentifier else { return }
+
+        let oldKey = tokenStorageKey
+        tokenIdentifier = newIdentifier
+        keychain.deleteString(forKey: oldKey)
+        loadStoredToken()
+    }
+
+    private var tokenStorageKey: String {
+        "untis_rest_token_\(tokenIdentifier)"
     }
 
     // MARK: - Utility Methods
@@ -784,9 +819,77 @@ class UntisRESTClient: ObservableObject {
 
 extension UntisRESTClient {
     /// Create configured instance for a WebUntis server
-    static func create(for serverURL: String, schoolName: String) -> UntisRESTClient {
-        // Convert WebUntis URL to REST API base URL
-        let baseURL = serverURL.replacingOccurrences(of: "/WebUntis", with: "")
-        return UntisRESTClient(baseURL: baseURL, schoolName: schoolName)
+    static func create(
+        for serverURL: String,
+        schoolName: String,
+        userIdentifier: String? = nil,
+        session: URLSession = .shared
+    ) -> UntisRESTClient {
+        let normalizedBase = normalizeBaseURL(serverURL)
+        return UntisRESTClient(
+            baseURL: normalizedBase,
+            schoolName: schoolName,
+            tokenIdentifier: userIdentifier,
+            session: session
+        )
+    }
+
+    static func normalizeBaseURL(_ rawURL: String) -> String {
+        var trimmed = rawURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            return "https://webuntis.com"
+        }
+
+        if !trimmed.lowercased().hasPrefix("http://") && !trimmed.lowercased().hasPrefix("https://") {
+            trimmed = "https://" + trimmed
+        }
+
+        guard var components = URLComponents(string: trimmed) else {
+            return trimmed
+        }
+
+        if components.scheme == nil {
+            components.scheme = "https"
+        }
+
+        var path = components.path
+        if let range = path.range(of: "/WebUntis", options: .caseInsensitive) {
+            path = String(path[..<range.lowerBound])
+        }
+
+        components.path = path.isEmpty || path == "/" ? "" : path
+        components.query = nil
+        components.fragment = nil
+
+        guard var base = components.url?.absoluteString else {
+            return trimmed
+        }
+
+        while base.hasSuffix("/") {
+            base.removeLast()
+        }
+
+        return base
+    }
+
+    static func makeTokenIdentifier(
+        baseURL: String,
+        schoolName: String,
+        userIdentifier: String?
+    ) -> String {
+        let host = URL(string: baseURL)?.host ?? baseURL
+        let components = [
+            sanitizeComponent(host),
+            sanitizeComponent(schoolName),
+            sanitizeComponent(userIdentifier ?? "anonymous")
+        ]
+        return components.joined(separator: "_")
+    }
+
+    private static func sanitizeComponent(_ value: String) -> String {
+        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-"))
+        let filtered = value.lowercased().unicodeScalars.map { allowed.contains($0) ? Character($0) : "_" }
+        let sanitized = String(filtered).trimmingCharacters(in: CharacterSet(charactersIn: "_"))
+        return sanitized.isEmpty ? "unknown" : sanitized
     }
 }

@@ -1,4 +1,6 @@
 import SwiftUI
+import UIKit
+import AVFoundation
 
 struct LoginView: View {
     @EnvironmentObject var userRepository: UserRepository
@@ -12,38 +14,39 @@ struct LoginView: View {
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
     @State private var showingSchoolSearch: Bool = false
+    @State private var showingQRScanner: Bool = false
     @State private var foundSchools: [SchoolInfo] = []
 
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // App logo and title
-                    headerSection
+            ZStack {
+                LinearGradient(
+                    colors: [brandPrimary, brandSecondary],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
 
-                    // Login form
-                    loginFormSection
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 28) {
+                        headerSection
+                        loginFormCard
+                        primaryActionsSection
+                        secondaryActionsSection
 
-                    // Action buttons
-                    actionButtonsSection
+                        if let errorMessage = errorMessage {
+                            errorView(errorMessage)
+                        }
 
-                    // Additional options
-                    additionalOptionsSection
-
-                    // Error message
-                    if let errorMessage = errorMessage {
-                        errorView(errorMessage)
+                        footerSection
                     }
-
-                    Spacer(minLength: 50)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 32)
                 }
-                .padding(.horizontal, 24)
-                .padding(.vertical, 20)
             }
             .navigationBarHidden(true)
-            .background(Color(UIColor.systemGroupedBackground))
         }
-        .navigationViewStyle(StackNavigationViewStyle()) // Prevent iPad split view
+        .navigationViewStyle(StackNavigationViewStyle())
         .sheet(isPresented: $showingSchoolSearch) {
             SchoolSearchView(
                 schools: foundSchools,
@@ -56,173 +59,198 @@ struct LoginView: View {
                 }
             )
         }
+        .sheet(isPresented: $showingQRScanner) {
+            QRCodeScannerView { qrCodeString in
+                showingQRScanner = false
+                parseURLOrQRCode(qrCodeString)
+            }
+        }
     }
 
     // MARK: - Header Section
     private var headerSection: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "calendar.badge.clock")
-                .font(.system(size: 80))
-                .foregroundColor(.blue)
-
-            VStack(spacing: 4) {
-                Text("BetterUntis")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-
-                Text("Your timetable, reimagined")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-        }
-        .padding(.top, 40)
-    }
-
-    // MARK: - Login Form Section
-    private var loginFormSection: some View {
-        VStack(spacing: 16) {
-            // Server URL field
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("School Server")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-
-                    Spacer()
-
-                    Button("Search Schools") {
-                        searchSchools()
-                    }
-                    .font(.caption)
-                    .foregroundColor(.blue)
-                    .disabled(isLoading)
-                }
-
-                TextField("e.g., school.webuntis.com", text: $serverURL)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .autocapitalization(.none)
-                    .keyboardType(.URL)
-                    .disabled(isLoading)
-            }
-
-            // School name field
-            VStack(alignment: .leading, spacing: 8) {
-                Text("School Name")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-
-                TextField("School identifier", text: $schoolName)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .autocapitalization(.none)
-                    .disabled(isLoading)
-            }
-
-            // Username field
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Username")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-
-                TextField("Your username", text: $username)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .autocapitalization(.none)
-                    .disabled(isLoading)
-            }
-
-            // Password field
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Password")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-
-                SecureField("Your password", text: $password)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .disabled(isLoading)
-            }
-        }
-        .padding(.horizontal, 4)
-    }
-
-    // MARK: - Action Buttons Section
-    private var actionButtonsSection: some View {
         VStack(spacing: 12) {
-            // Login button
+            ZStack {
+                Circle()
+                    .fill(Color.white.opacity(0.15))
+                    .frame(width: 140, height: 140)
+
+                Image(systemName: "calendar.badge.clock")
+                    .font(.system(size: 64, weight: .semibold))
+                    .foregroundColor(.white)
+            }
+
+            VStack(spacing: 6) {
+                Text("BetterUntis")
+                    .font(.system(size: 34, weight: .bold))
+                    .foregroundColor(.white)
+
+                Text("Sign in to stay in sync with your school day")
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.85))
+                    .multilineTextAlignment(.center)
+            }
+        }
+    }
+
+    private var loginFormCard: some View {
+        VStack(spacing: 18) {
+            formField(
+                icon: "network",
+                title: "School Server",
+                placeholder: "mese.webuntis.com",
+                text: $serverURL,
+                keyboardType: .URL
+            )
+
+            HStack(spacing: 12) {
+                Button(action: {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    searchSchools()
+                }) {
+                    Label("Find my school", systemImage: "magnifyingglass")
+                        .foregroundColor(brandPrimary)
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 16)
+                        .background(RoundedRectangle(cornerRadius: 12).fill(brandPrimary.opacity(0.12)))
+                }
+                .disabled(isLoading)
+
+                Button(action: pasteFromClipboard) {
+                    Label("Paste", systemImage: "doc.on.clipboard")
+                        .foregroundColor(brandPrimary)
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 16)
+                        .background(RoundedRectangle(cornerRadius: 12).fill(brandPrimary.opacity(0.06)))
+                }
+                .disabled(isLoading || !clipboardHasString)
+            }
+
+            formField(
+                icon: "building.columns",
+                title: "School Name",
+                placeholder: "IT-Schule Stuttgart",
+                text: $schoolName
+            )
+
+            formField(
+                icon: "person.fill",
+                title: "Username",
+                placeholder: "Your WebUntis username",
+                text: $username
+            )
+
+            formField(
+                icon: "lock.fill",
+                title: "Password",
+                placeholder: "Your password",
+                text: $password,
+                isSecure: true
+            )
+        }
+        .padding(24)
+        .background(
+            RoundedRectangle(cornerRadius: 26)
+                .fill(Color(.systemBackground).opacity(0.96))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 26)
+                .stroke(Color.white.opacity(0.12))
+        )
+        .shadow(color: Color.black.opacity(0.15), radius: 24, x: 0, y: 12)
+    }
+
+    private var primaryActionsSection: some View {
+        VStack(spacing: 16) {
             Button(action: performLogin) {
-                HStack {
+                HStack(spacing: 12) {
                     if isLoading {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                            .scaleEffect(0.8)
                     }
 
-                    Text(isLoading ? "Logging in..." : "Login")
+                    Text(isLoading ? "Signing in" : "Sign in")
+                        .font(.headline)
                         .fontWeight(.semibold)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(loginButtonColor)
+                .padding(.vertical, 16)
+                .background(
+                    LinearGradient(colors: [brandPrimary, brandSecondary], startPoint: .topLeading, endPoint: .bottomTrailing)
+                )
                 .foregroundColor(.white)
-                .cornerRadius(8)
+                .cornerRadius(18)
+                .shadow(color: brandPrimary.opacity(0.3), radius: 12, x: 0, y: 8)
             }
             .disabled(!isLoginFormValid || isLoading)
 
-            // Anonymous login button
-            Button("Continue as Guest") {
-                performAnonymousLogin()
+            Button(action: performAnonymousLogin) {
+                Text("Continue as guest")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(brandPrimary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.3)))
             }
-            .font(.subheadline)
-            .foregroundColor(.blue)
             .disabled(isLoading || serverURL.isEmpty || schoolName.isEmpty)
         }
     }
 
-    // MARK: - Additional Options Section
-    private var additionalOptionsSection: some View {
-        VStack(spacing: 16) {
-            // QR Code scan button
-            Button(action: {
-                // TODO: Implement QR code scanning
-            }) {
-                HStack {
-                    Image(systemName: "qrcode.viewfinder")
-                    Text("Scan QR Code")
-                }
-                .font(.subheadline)
-                .foregroundColor(.blue)
+    private var secondaryActionsSection: some View {
+        VStack(spacing: 18) {
+            Button(action: openQRScanner) {
+                Label("Scan QR code", systemImage: "qrcode.viewfinder")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(.white)
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .background(RoundedRectangle(cornerRadius: 14).fill(Color.white.opacity(0.12)))
             }
             .disabled(isLoading)
-
-            // Help text
-            Text("Having trouble? Check your school's WebUntis settings or contact your school administrator.")
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 20)
         }
+    }
+
+    private var footerSection: some View {
+        Text("Need help signing in? Reach out to your school's WebUntis administrator.")
+            .font(.caption)
+            .foregroundColor(.white.opacity(0.75))
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 8)
     }
 
     // MARK: - Error View
     private func errorView(_ message: String) -> some View {
-        HStack {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundColor(.red)
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "exclamationmark.octagon.fill")
+                .foregroundColor(.white)
+                .font(.title3)
 
-            Text(message)
-                .font(.subheadline)
-                .foregroundColor(.red)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("We couldn't sign you in")
+                    .font(.headline)
+                    .foregroundColor(.white)
 
-            Spacer()
+                Text(message)
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.85))
 
-            Button("Dismiss") {
-                errorMessage = nil
+                Button(action: { errorMessage = nil }) {
+                    Text("Dismiss")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color.white.opacity(0.15))
+                        .cornerRadius(8)
+                }
             }
-            .font(.caption)
-            .foregroundColor(.blue)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(Color.red.opacity(0.1))
-        .cornerRadius(8)
+        .padding(18)
+        .background(RoundedRectangle(cornerRadius: 20).fill(Color.red.opacity(0.55)))
+        .shadow(color: Color.black.opacity(0.2), radius: 12, x: 0, y: 8)
     }
 
     // MARK: - Computed Properties
@@ -230,8 +258,64 @@ struct LoginView: View {
         !serverURL.isEmpty && !schoolName.isEmpty && !username.isEmpty && !password.isEmpty
     }
 
-    private var loginButtonColor: Color {
-        isLoginFormValid ? .blue : .gray
+    private var brandPrimary: Color {
+        Color(red: 0.95, green: 0.47, blue: 0.12)
+    }
+
+    private var brandSecondary: Color {
+        Color(red: 0.99, green: 0.67, blue: 0.32)
+    }
+
+    private var clipboardHasString: Bool {
+        if let text = UIPasteboard.general.string {
+            return !text.isEmpty
+        }
+        return false
+    }
+
+    private func formField(
+        icon: String,
+        title: String,
+        placeholder: String,
+        text: Binding<String>,
+        isSecure: Bool = false,
+        keyboardType: UIKeyboardType = .default
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title.uppercased())
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundColor(.secondary)
+
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .foregroundColor(brandPrimary)
+
+                if isSecure {
+                    SecureField(placeholder, text: text)
+                        .textInputAutocapitalization(.never)
+                        .disableAutocorrection(true)
+                        .keyboardType(keyboardType)
+                        .disabled(isLoading)
+                } else {
+                    TextField(placeholder, text: text)
+                        .textInputAutocapitalization(.never)
+                        .disableAutocorrection(true)
+                        .keyboardType(keyboardType)
+                        .disabled(isLoading)
+                }
+            }
+            .padding(.vertical, 14)
+            .padding(.horizontal, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(.secondarySystemBackground))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color(.systemGray4), lineWidth: 1)
+            )
+        }
     }
 
     // MARK: - Methods
@@ -297,6 +381,81 @@ struct LoginView: View {
                     errorMessage = "School search failed: \(error.localizedDescription)"
                 }
             }
+        }
+    }
+
+    private func openQRScanner() {
+        let feedback = UIImpactFeedbackGenerator(style: .medium)
+        feedback.impactOccurred()
+
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            errorMessage = nil
+            showingQRScanner = true
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { granted in
+                DispatchQueue.main.async {
+                    if granted {
+                        self.errorMessage = nil
+                        self.showingQRScanner = true
+                    } else {
+                        self.errorMessage = "Camera access is required to scan QR codes. Enable it in Settings."
+                        UINotificationFeedbackGenerator().notificationOccurred(.warning)
+                    }
+                }
+            }
+        case .denied, .restricted:
+            errorMessage = "Camera access is required to scan QR codes. Enable it in Settings."
+            UINotificationFeedbackGenerator().notificationOccurred(.warning)
+        @unknown default:
+            showingQRScanner = false
+        }
+    }
+
+    private func pasteFromClipboard() {
+        guard let clipboardString = UIPasteboard.general.string, !clipboardString.isEmpty else {
+            errorMessage = "Clipboard is empty"
+            UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
+            return
+        }
+
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        parseURLOrQRCode(clipboardString)
+    }
+
+    private func parseURLOrQRCode(_ input: String) {
+        if WebUntisURLParser.isWebUntisQRCode(input),
+           let loginData = WebUntisURLParser.parseQRCode(input) {
+            applyLoginData(loginData)
+            return
+        }
+
+        if WebUntisURLParser.isWebUntisURL(input),
+           let loginData = WebUntisURLParser.parseWebUntisURL(input) {
+            applyLoginData(loginData)
+            return
+        }
+
+        errorMessage = "Invalid WebUntis URL or QR code"
+    }
+
+    private func applyLoginData(_ loginData: WebUntisLoginData) {
+        serverURL = loginData.server
+        schoolName = loginData.school
+
+        if let username = loginData.username {
+            self.username = username
+        }
+
+        if let key = loginData.key {
+            self.password = key
+        }
+
+        if loginData.isQRCode {
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            errorMessage = "✅ QR code detected. Review and sign in."
+        } else {
+            errorMessage = nil
         }
     }
 }

@@ -226,7 +226,7 @@ class TimetableRepository: ObservableObject {
             resourceIds: [Int(personId)],
             startDate: startDate,
             endDate: endDate,
-            cacheMode: .onlineOnly,
+            cacheMode: .noCache,
             format: 1,
             periodTypes: nil,
             timetableType: .myTimetable,
@@ -258,7 +258,11 @@ class TimetableRepository: ObservableObject {
         }
 
         let serverURL = buildServerURL(from: user.apiHost)
-        let client = UntisRESTClient.create(for: serverURL, schoolName: user.schoolName)
+        let client = UntisRESTClient.create(
+            for: serverURL,
+            schoolName: user.schoolName,
+            userIdentifier: String(user.id)
+        )
         restClients[user.id] = client
         return client
     }

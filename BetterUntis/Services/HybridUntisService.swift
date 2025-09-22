@@ -55,10 +55,18 @@ class HybridUntisService: ObservableObject {
 
     // MARK: - Initialization
 
-    init(baseURL: String, schoolName: String, keychain: KeychainManager = KeychainManager.shared) {
-        self.restClient = UntisRESTClient.create(for: baseURL, schoolName: schoolName)
-        self.jsonrpcClient = UntisAPIClient()
+    init(
+        baseURL: String,
+        schoolName: String,
+        restClient: UntisRESTClient? = nil,
+        jsonrpcClient: UntisAPIClient = UntisAPIClient(),
+        keychain: KeychainManager = KeychainManager.shared
+    ) {
+        self.restClient = restClient ?? UntisRESTClient.create(for: baseURL, schoolName: schoolName)
+        self.jsonrpcClient = jsonrpcClient
         self.keychain = keychain
+        self.serverURL = baseURL
+        self.schoolName = schoolName
 
         // Load cached capabilities
         loadServerCapabilities(for: "\(baseURL)_\(schoolName)")
@@ -88,6 +96,7 @@ class HybridUntisService: ObservableObject {
                 switch method {
                 case .rest:
                     if enableRESTAPI && serverCapabilities?.supportsRESTAPI == true {
+                        restClient.updateTokenScope(userIdentifier: username)
                         let _ = try await restClient.authenticate(username: username, password: password)
                         isAuthenticated = true
                         currentAuthMethod = .rest
@@ -172,7 +181,7 @@ class HybridUntisService: ObservableObject {
                 case .student: restElementType = .student
                 }
 
-                let cacheMode: RESTCacheMode = preferRESTAPI ? .onlineOnly : .offlineOnly
+                let cacheMode: RESTCacheMode = preferRESTAPI ? .noCache : .offlineOnly
                 let response = try await restClient.getTimetableEntries(
                     resourceType: restElementType,
                     resourceIds: [elementId],
@@ -252,8 +261,8 @@ class HybridUntisService: ObservableObject {
                 let requestPayload = SaaDataRequest(
                     classId: nil,
                     dateRange: SaaDateRange(
-                        start: DateFormatter.untisDate.string(from: startDate),
-                        end: DateFormatter.untisDate.string(from: endDate)
+                        start: DateFormatter.untisDateTime.string(from: Calendar.current.startOfDay(for: startDate)),
+                        end: DateFormatter.untisDateTime.string(from: Calendar.current.date(bySettingHour: 23, minute: 59, second: 59, of: endDate) ?? endDate)
                     ),
                     dateRangeType: nil,
                     studentId: nil,

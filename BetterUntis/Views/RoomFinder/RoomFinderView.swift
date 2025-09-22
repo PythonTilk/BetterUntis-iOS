@@ -527,7 +527,11 @@ class RoomFinderRepository: ObservableObject {
         }
 
         let serverURL = buildServerURL(from: user.apiHost)
-        let client = UntisRESTClient.create(for: serverURL, schoolName: user.schoolName)
+        let client = UntisRESTClient.create(
+            for: serverURL,
+            schoolName: user.schoolName,
+            userIdentifier: String(user.id)
+        )
         restClients[user.id] = client
         return client
     }

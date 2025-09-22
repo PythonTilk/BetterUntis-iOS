@@ -203,7 +203,11 @@ class UserRepository: ObservableObject {
 
             // Initialize REST token for future API calls
             let restServer = restBaseURL(from: finalApiUrl)
-            let restClient = UntisRESTClient.create(for: restServer, schoolName: school)
+            let restClient = UntisRESTClient.create(
+                for: restServer,
+                schoolName: school,
+                userIdentifier: String(user.id)
+            )
             do {
                 print("🔐 Attempting REST authentication for \(username) on \(restServer)")
                 _ = try await restClient.authenticate(username: username, password: password)
