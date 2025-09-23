@@ -248,49 +248,205 @@ struct PeriodView: View {
         Color(hex: period.foreColor) ?? .primary
     }
 
+    private var effectiveBackgroundColor: Color {
+        period.isCancelledLesson ? Color(UIColor.systemGray5) : backgroundColor
+    }
+
+    private var effectiveForegroundColor: Color {
+        period.isCancelledLesson ? .secondary : foregroundColor
+    }
+
+    private var isCancelledLesson: Bool {
+        period.isCancelledLesson
+    }
+
+    private var hasTeacherSubstitution: Bool {
+        period.`is`(.teacherSubstitution)
+    }
+
+    private var hasRoomChange: Bool {
+        period.`is`(.roomSubstitution)
+    }
+
+    private var isExamPeriod: Bool {
+        period.`is`(.exam) || period.exam != nil
+    }
+
+    private var statusBadges: [(text: String, color: Color)] {
+        var badges: [(text: String, color: Color)] = []
+
+        if isCancelledLesson {
+            badges.append(("Cancelled", Color(UIColor.systemRed)))
+        }
+
+        if let examLabel = period.examStatusLabel {
+            badges.append((examLabel, Color(UIColor.systemOrange)))
+        }
+
+        return badges
+    }
+
+    private var examDetailText: String? { period.examDetailText }
+
+    private var supplementalInfoText: String? {
+        guard let info = period.infoSummary else { return nil }
+
+        if let examDetailText, info == examDetailText {
+            return nil
+        }
+
+        return info
+    }
+
+    private var outlineConfigurations: [(color: Color, inset: CGFloat)] {
+        var configs: [(Color, CGFloat)] = []
+
+        if isExamPeriod {
+            configs.append((Color(UIColor.systemYellow), 0))
+        }
+
+        if hasRoomChange {
+            let inset = configs.isEmpty ? 0 : 3
+            configs.append((Color(UIColor.systemPurple), inset))
+        }
+
+        if hasTeacherSubstitution {
+            let inset = configs.isEmpty ? 0 : (configs.last?.inset ?? 0) + 3
+            configs.append((Color(UIColor.systemGreen), inset))
+        }
+
+        return configs
+    }
+
+    @ViewBuilder
+    private var outlineOverlay: some View {
+        if outlineConfigurations.isEmpty {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(effectiveForegroundColor.opacity(0.2), lineWidth: 0.5)
+        } else {
+            ZStack {
+                ForEach(Array(outlineConfigurations.enumerated()), id: \.offset) { _, configuration in
+                    RoundedRectangle(cornerRadius: 8)
+                        .inset(by: configuration.inset)
+                        .stroke(configuration.color, lineWidth: 2)
+                }
+            }
+        }
+    }
+
     var body: some View {
         Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 2) {
-                if let lessonText = period.text.lesson {
-                    Text(lessonText)
+            VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(period.displayLessonTitle)
                         .font(.caption)
-                        .fontWeight(.medium)
+                        .fontWeight(.semibold)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
+                        .strikethrough(isCancelledLesson, color: .secondary)
+
+                    if !statusBadges.isEmpty {
+                        HStack(spacing: 4) {
+                            ForEach(Array(statusBadges.enumerated()), id: \.offset) { _, badge in
+                                StatusBadge(text: badge.text, color: badge.color)
+                            }
+                        }
+                    }
                 }
 
-                if !period.elements.isEmpty {
-                    Text(period.elements.map(\.name).joined(separator: ", "))
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
+                if let classes = period.classSummary {
+                    InfoRow(
+                        icon: "person.3.fill",
+                        text: classes,
+                        textColor: effectiveForegroundColor,
+                        lineLimit: 2,
+                        strikethrough: isCancelledLesson
+                    )
                 }
 
-                Spacer()
+                if let teacher = period.teacherSummary {
+                    InfoRow(
+                        icon: "person.fill",
+                        text: teacher,
+                        textColor: effectiveForegroundColor,
+                        lineLimit: 2,
+                        strikethrough: isCancelledLesson
+                    )
+                }
 
-                // Time display
+                if let substitution = period.substitutionSummary {
+                    InfoRow(
+                        icon: "person.crop.circle.badge.exclam",
+                        text: substitution,
+                        textColor: Color(UIColor.systemGreen),
+                        lineLimit: 3,
+                        strikethrough: isCancelledLesson
+                    )
+                }
+
+                if let room = period.roomSummary {
+                    InfoRow(
+                        icon: "mappin.and.ellipse",
+                        text: room,
+                        textColor: effectiveForegroundColor,
+                        lineLimit: 2,
+                        strikethrough: isCancelledLesson
+                    )
+                }
+
+                if let examDetailText {
+                    InfoRow(
+                        icon: "doc.text",
+                        text: examDetailText,
+                        textColor: Color(UIColor.systemOrange),
+                        lineLimit: 3,
+                        strikethrough: isCancelledLesson
+                    )
+                }
+
+                if let homework = period.homeworkSummary {
+                    InfoRow(
+                        icon: "checklist",
+                        text: homework,
+                        textColor: effectiveForegroundColor,
+                        lineLimit: 3,
+                        strikethrough: isCancelledLesson
+                    )
+                }
+
+                if let info = supplementalInfoText {
+                    InfoRow(
+                        icon: "info.circle",
+                        text: info,
+                        textColor: effectiveForegroundColor,
+                        lineLimit: 3,
+                        strikethrough: isCancelledLesson
+                    )
+                }
+
+                Spacer(minLength: 0)
+
                 HStack {
                     Text(timeString(from: period.startDateTime))
                         .font(.caption2)
                         .foregroundColor(.secondary)
+                        .strikethrough(isCancelledLesson, color: .secondary)
 
                     Spacer()
 
                     Text(timeString(from: period.endDateTime))
                         .font(.caption2)
                         .foregroundColor(.secondary)
+                        .strikethrough(isCancelledLesson, color: .secondary)
                 }
             }
-            .padding(.horizontal, 4)
-            .padding(.vertical, 2)
-            .frame(width: dayWidth - 2, height: max(30, periodHeight - 1))
-            .background(backgroundColor)
-            .foregroundColor(foregroundColor)
-            .cornerRadius(4)
-            .overlay(
-                RoundedRectangle(cornerRadius: 4)
-                    .stroke(foregroundColor.opacity(0.3), lineWidth: 0.5)
-            )
+            .padding(.horizontal, 6)
+            .padding(.vertical, 6)
+            .frame(width: dayWidth - 2, height: max(44, periodHeight - 1))
+            .background(effectiveBackgroundColor)
+            .foregroundColor(effectiveForegroundColor)
+            .cornerRadius(8)
+            .overlay(outlineOverlay)
         }
         .buttonStyle(PlainButtonStyle())
         .offset(x: 1, y: yPosition)
@@ -310,58 +466,120 @@ struct PeriodDetailView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    // Period title
-                    if let lessonText = period.text.lesson {
-                        Text(lessonText)
-                            .font(.title2)
-                            .fontWeight(.bold)
-                    }
+                VStack(alignment: .leading, spacing: 20) {
+                    Text(period.displayLessonTitle)
+                        .font(.title2)
+                        .fontWeight(.bold)
 
-                    // Time information
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Time")
-                            .font(.headline)
-
-                        HStack {
-                            Text("Start:")
-                            Spacer()
-                            Text(DateFormatter.timeAndDate.string(from: period.startDateTime))
-                        }
-
-                        HStack {
-                            Text("End:")
-                            Spacer()
-                            Text(DateFormatter.timeAndDate.string(from: period.endDateTime))
-                        }
-                    }
-
-                    // Elements (teachers, rooms, etc.)
-                    if !period.elements.isEmpty {
+                    if period.isCancelledLesson || period.examStatusLabel != nil {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Details")
-                                .font(.headline)
+                            if period.isCancelledLesson {
+                                StatusBadge(text: "Cancelled", color: .red)
+                            }
 
-                            ForEach(period.elements, id: \.id) { element in
-                                HStack {
-                                    Text(getElementTypeString(element.type) + ":")
-                                    Spacer()
-                                    Text(element.longName.isEmpty ? element.name : element.longName)
-                                }
+                            if let examText = period.examStatusLabel {
+                                StatusBadge(text: examText, color: .orange)
                             }
                         }
                     }
 
-                    // Additional info
-                    if let info = period.text.info, !info.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Time")
+                            .font(.headline)
+
+                        InfoRow(
+                            icon: "clock.fill",
+                            text: "Start: \(DateFormatter.timeAndDate.string(from: period.startDateTime))",
+                            font: .subheadline,
+                            lineLimit: 1
+                        )
+
+                        InfoRow(
+                            icon: "clock",
+                            text: "End: \(DateFormatter.timeAndDate.string(from: period.endDateTime))",
+                            font: .subheadline,
+                            lineLimit: 1
+                        )
+                    }
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Details")
+                            .font(.headline)
+
+                        if let subject = period.subjectSummary {
+                            InfoRow(icon: "book.fill", text: subject, font: .subheadline, lineLimit: 3)
+                        }
+
+                        if let classes = period.classSummary {
+                            InfoRow(icon: "person.3.fill", text: classes, font: .subheadline, lineLimit: 3)
+                        }
+
+                        if let teacher = period.teacherSummary {
+                            InfoRow(icon: "person.fill", text: teacher, font: .subheadline, lineLimit: 3)
+                        }
+
+                        if let room = period.roomSummary {
+                            InfoRow(icon: "mappin.and.ellipse", text: room, font: .subheadline, lineLimit: 3)
+                        }
+
+                        if let substitution = period.substitutionSummary {
+                            InfoRow(icon: "person.crop.circle.badge.exclam", text: substitution, font: .subheadline, lineLimit: 3)
+                        }
+
+                        if let examDetail = period.examDetailText {
+                            InfoRow(
+                                icon: "doc.text",
+                                text: examDetail,
+                                font: .subheadline,
+                                textColor: Color(UIColor.systemOrange),
+                                lineLimit: 3
+                            )
+                        }
+                    }
+
+                    if let homeworks = period.homeWorks, !homeworks.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Homework")
+                                .font(.headline)
+
+                            ForEach(homeworks, id: \.id) { homework in
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text(homework.text.isEmpty ? "Homework" : homework.text)
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+
+                                    InfoRow(
+                                        icon: "calendar",
+                                        text: "Due: \(dueDateString(for: homework.dueDate))",
+                                        font: .caption,
+                                        lineLimit: 1
+                                    )
+
+                                    HStack(spacing: 8) {
+                                        StatusBadge(text: homework.completed ? "Completed" : "Pending", color: homework.completed ? .green : .blue)
+
+                                        if let remark = homework.remark, !remark.isEmpty {
+                                            Text(remark)
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                                .lineLimit(2)
+                                        }
+                                    }
+                                }
+                                .padding(10)
+                                .background(Color(UIColor.systemGray6))
+                                .cornerRadius(8)
+                            }
+                        }
+                    }
+
+                    if let info = period.infoSummary, info != period.examDetailText {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Information")
                                 .font(.headline)
                             Text(info)
                         }
                     }
-
-                    Spacer()
                 }
                 .padding()
             }
@@ -376,6 +594,10 @@ struct PeriodDetailView: View {
             }
         }
     }
+
+    private func dueDateString(for date: Date) -> String {
+        DateFormatter.localizedString(from: date, dateStyle: .medium, timeStyle: .none)
+    }
 }
 
 // MARK: - Extensions
@@ -388,18 +610,170 @@ extension DateFormatter {
     }()
 }
 
-private func getElementTypeString(_ elementType: ElementType) -> String {
-    switch elementType {
-    case .klasse:
-        return "Class"
-    case .teacher:
-        return "Teacher"
-    case .subject:
-        return "Subject"
-    case .room:
-        return "Room"
-    case .student:
-        return "Student"
+private struct StatusBadge: View {
+    let text: String
+    let color: Color
+
+    var body: some View {
+        Text(text)
+            .font(.caption2)
+            .fontWeight(.semibold)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(color.opacity(0.15))
+            .foregroundColor(color)
+            .cornerRadius(6)
+    }
+}
+
+private struct InfoRow: View {
+    let icon: String
+    let text: String
+    var font: Font = .caption2
+    var textColor: Color = .primary
+    var lineLimit: Int = 2
+    var strikethrough: Bool = false
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 4) {
+            Image(systemName: icon)
+                .font(font)
+                .foregroundColor(.secondary)
+
+            Text(text)
+                .font(font)
+                .foregroundColor(textColor)
+                .strikethrough(strikethrough, color: textColor)
+                .lineLimit(lineLimit)
+                .multilineTextAlignment(.leading)
+        }
+    }
+}
+
+private extension Period {
+    var displayLessonTitle: String {
+        if let lesson = text.lesson?.trimmingCharacters(in: .whitespacesAndNewlines), !lesson.isEmpty {
+            return lesson
+        }
+
+        if let subject = elements.first(where: { $0.type == .subject }) {
+            return subject.displayText
+        }
+
+        return "Lesson"
+    }
+
+    var teacherSummary: String? { summary(for: .teacher) }
+
+    var roomSummary: String? { summary(for: .room) }
+
+    var classSummary: String? { summary(for: .klasse) }
+
+    var subjectSummary: String? { summary(for: .subject) }
+
+    var isCancelledLesson: Bool {
+        self.`is`(.cancelled)
+    }
+
+    var examSummary: String? {
+        guard let exam = exam else { return nil }
+
+        let components = [exam.name, exam.text]
+            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+
+        if !components.isEmpty {
+            return components.joined(separator: " – ")
+        }
+
+        if let type = exam.examType?.trimmingCharacters(in: .whitespacesAndNewlines), !type.isEmpty {
+            return type.capitalized
+        }
+
+        return "Class Test"
+    }
+
+    var examStatusLabel: String? {
+        guard `is`(.exam) || exam != nil else { return nil }
+
+        if let summary = examSummary {
+            return summary.count > 18 ? "Exam" : summary
+        }
+
+        return "Exam"
+    }
+
+    var examDetailText: String? {
+        if let summary = examSummary {
+            return summary
+        }
+
+        if `is`(.exam) {
+            return infoSummary ?? "Exam"
+        }
+
+        return nil
+    }
+
+    var infoSummary: String? {
+        guard let info = text.info?.trimmingCharacters(in: .whitespacesAndNewlines), !info.isEmpty else {
+            return nil
+        }
+
+        return info
+    }
+
+    var homeworkSummary: String? {
+        guard let homeworks = homeWorks, !homeworks.isEmpty else { return nil }
+
+        if let first = homeworks.first(where: { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) {
+            return first.text
+        }
+
+        return homeworks.count == 1 ? "Homework assigned" : "Homework: \(homeworks.count) tasks"
+    }
+
+    var substitutionSummary: String? {
+        if let substitution = text.substitution?.trimmingCharacters(in: .whitespacesAndNewlines), !substitution.isEmpty {
+            return substitution
+        }
+
+        if self.`is`(.teacherSubstitution) {
+            return "Substitute teacher"
+        }
+
+        if self.`is`(.roomSubstitution) {
+            return "Room substitution"
+        }
+
+        if self.`is`(.subjectSubstitution) {
+            return "Subject substitution"
+        }
+
+        return nil
+    }
+
+    private func summary(for type: ElementType) -> String? {
+        let names = elements
+            .filter { $0.type == type }
+            .map { $0.displayText }
+            .filter { !$0.isEmpty }
+
+        return names.isEmpty ? nil : names.joined(separator: ", ")
+    }
+}
+
+private extension PeriodElement {
+    var displayText: String {
+        if let displayName = displayName?.trimmingCharacters(in: .whitespacesAndNewlines), !displayName.isEmpty {
+            return displayName
+        }
+
+        if !longName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return longName
+        }
+
+        return name
     }
 }
 
