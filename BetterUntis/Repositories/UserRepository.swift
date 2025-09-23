@@ -147,7 +147,7 @@ class UserRepository: ObservableObject {
                 print("✅ getUserData successful")
 
                 // Parse user data from dictionary
-                guard let userMasterId = userDataResult["masterId"] as? Int64,
+                guard let userMasterId = int64Value(from: userDataResult["masterId"]),
                       let userDisplayName = userDataResult["displayName"] as? String,
                       let userSchoolName = userDataResult["schoolName"] as? String else {
                     throw LoginError.invalidUserData
@@ -347,6 +347,22 @@ class UserRepository: ObservableObject {
 
     func getUserCredentials(for userId: Int64) -> UserCredentials? {
         return keychainManager.loadUserCredentials(userId: String(userId))
+    }
+
+    private func int64Value(from value: Any?) -> Int64? {
+        if let number = value as? NSNumber {
+            return number.int64Value
+        }
+        if let int64 = value as? Int64 {
+            return int64
+        }
+        if let int = value as? Int {
+            return Int64(int)
+        }
+        if let string = value as? String {
+            return Int64(string)
+        }
+        return nil
     }
 }
 

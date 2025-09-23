@@ -10,10 +10,11 @@ struct WeekView: View {
     @State private var scrollOffset: CGFloat = 0
     @State private var selectedPeriod: Period?
 
-    private let dayWidth: CGFloat = 120
+    private let defaultDayWidth: CGFloat = 120
     private let hourHeight: CGFloat = 60
     private let timeColumnWidth: CGFloat = 50
     private let headerHeight: CGFloat = 50
+    private let daySpacing: CGFloat = 1
 
     // Time range constants (6 AM to 10 PM)
     private let startHour: Int = 6
@@ -22,12 +23,20 @@ struct WeekView: View {
 
     var body: some View {
         GeometryReader { geometry in
+            let availableWidth = max(geometry.size.width - timeColumnWidth - (daySpacing * 6), 0)
+            let computedDayWidth = max(defaultDayWidth, availableWidth / 7)
+            let contentWidth = max(
+                geometry.size.width,
+                timeColumnWidth + (computedDayWidth * 7) + (daySpacing * 6)
+            )
+
             VStack(spacing: 0) {
                 // Header with day labels
                 WeekHeaderView(
                     currentWeekStartDate: currentWeekStartDate,
-                    dayWidth: dayWidth,
-                    timeColumnWidth: timeColumnWidth
+                    dayWidth: computedDayWidth,
+                    timeColumnWidth: timeColumnWidth,
+                    daySpacing: daySpacing
                 )
                 .frame(height: headerHeight)
 
@@ -43,24 +52,24 @@ struct WeekView: View {
                         .frame(width: timeColumnWidth)
 
                         // Days columns
-                        HStack(alignment: .top, spacing: 1) {
+                        HStack(alignment: .top, spacing: daySpacing) {
                             ForEach(0..<7, id: \.self) { dayIndex in
                                 DayColumnView(
                                     date: Calendar.current.date(byAdding: .day, value: dayIndex, to: currentWeekStartDate)!,
                                     periods: getPeriodsForDay(dayIndex),
-                                    dayWidth: dayWidth,
+                                    dayWidth: computedDayWidth,
                                     hourHeight: hourHeight,
                                     startHour: startHour,
                                     onPeriodTap: { period in
                                         selectedPeriod = period
                                     }
                                 )
-                                .frame(width: dayWidth)
+                                .frame(width: computedDayWidth)
                             }
                         }
                     }
                     .frame(
-                        width: timeColumnWidth + (dayWidth * 7) + 6, // +6 for spacing
+                        width: contentWidth,
                         height: CGFloat(totalHours) * hourHeight
                     )
                 }
@@ -91,6 +100,7 @@ struct WeekHeaderView: View {
     let currentWeekStartDate: Date
     let dayWidth: CGFloat
     let timeColumnWidth: CGFloat
+    let daySpacing: CGFloat
 
     private var dayFormatter: DateFormatter {
         let formatter = DateFormatter()
@@ -112,7 +122,7 @@ struct WeekHeaderView: View {
                 .frame(width: timeColumnWidth)
 
             // Day headers
-            HStack(spacing: 1) {
+            HStack(spacing: daySpacing) {
                 ForEach(0..<7, id: \.self) { dayIndex in
                     VStack(spacing: 2) {
                         Text(dayFormatter.string(from: Calendar.current.date(byAdding: .day, value: dayIndex, to: currentWeekStartDate)!))
@@ -306,12 +316,12 @@ struct PeriodView: View {
         }
 
         if hasRoomChange {
-            let inset = configs.isEmpty ? 0 : 3
+            let inset: CGFloat = configs.isEmpty ? 0 : 3
             configs.append((Color(UIColor.systemPurple), inset))
         }
 
         if hasTeacherSubstitution {
-            let inset = configs.isEmpty ? 0 : (configs.last?.inset ?? 0) + 3
+            let inset: CGFloat = configs.isEmpty ? 0 : (configs.last?.1 ?? 0) + 3
             configs.append((Color(UIColor.systemGreen), inset))
         }
 
@@ -658,6 +668,16 @@ private extension Period {
 
         if let subject = elements.first(where: { $0.type == .subject }) {
             return subject.displayText
+        }
+        
+        // Show teacher name if available
+        if let teacher = elements.first(where: { $0.type == .teacher }) {
+            return teacher.displayText
+        }
+        
+        // Show room name if available
+        if let room = elements.first(where: { $0.type == .room }) {
+            return room.displayText
         }
 
         return "Lesson"

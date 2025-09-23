@@ -63,10 +63,10 @@ struct InfoCenterView: View {
         .onAppear {
             loadDataForSelectedTab()
         }
-        .onChange(of: selectedTab) { _ in
+        .onChange(of: selectedTab) { _, _ in
             loadDataForSelectedTab()
         }
-        .onChange(of: userRepository.currentUser) { _ in
+        .onChange(of: userRepository.currentUser) { _, _ in
             loadDataForSelectedTab()
         }
     }
@@ -333,13 +333,109 @@ struct ExamRowView: View {
     }
 }
 
-// MARK: - Absences List View (Placeholder)
+// MARK: - Absences List View
 struct AbsencesListView: View {
-    let absences: [String] // Placeholder type
+    let absences: [AbsenceRecord]
+
+    private var timeFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        formatter.dateStyle = .none
+        return formatter
+    }
 
     var body: some View {
-        emptyStateView("Absences", "Absence tracking coming soon", "person.crop.circle.badge.xmark")
+        if absences.isEmpty {
+            emptyStateView(
+                "Absences",
+                "No recorded absences for the selected period",
+                "person.crop.circle.badge.xmark"
+            )
+        } else {
+            List(absences) { absence in
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text(absence.startDateTime, formatter: DateFormatter.shortDate)
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+
+                        Text(timeFormatter.string(from: absence.startDateTime))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+
+                        if !Calendar.current.isDate(absence.startDateTime, inSameDayAs: absence.endDateTime) {
+                            Text("→")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Text(absence.endDateTime, formatter: DateFormatter.shortDate)
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                            Text(timeFormatter.string(from: absence.endDateTime))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        } else {
+                            Text("– \(timeFormatter.string(from: absence.endDateTime))")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+
+                        Spacer()
+
+                        if let excused = absence.excused {
+                            Text(excused ? "Excused" : "Unexcused")
+                                .font(.caption2)
+                                .fontWeight(.semibold)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 3)
+                                .background((excused ? Color.green : Color.red).opacity(0.15))
+                                .foregroundColor(excused ? .green : .red)
+                                .cornerRadius(6)
+                        }
+                    }
+
+                    if let reason = absence.reason, !reason.isEmpty {
+                        HStack(spacing: 6) {
+                            Image(systemName: "info.circle")
+                                .foregroundColor(.blue)
+                            Text(reason)
+                                .font(.subheadline)
+                                .foregroundColor(.primary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+
+                    if let description = absence.description, !description.isEmpty {
+                        Text(description)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    if let klasse = absence.className, !klasse.isEmpty {
+                        HStack(spacing: 6) {
+                            Image(systemName: "person.3")
+                                .foregroundColor(.secondary)
+                            Text(klasse)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                .padding(.vertical, 6)
+            }
+            .listStyle(.insetGrouped)
+        }
     }
+}
+
+struct AbsenceRecord: Identifiable, Sendable {
+    let id: Int64
+    let startDateTime: Date
+    let endDateTime: Date
+    let excused: Bool?
+    let reason: String?
+    let description: String?
+    let className: String?
 }
 
 // MARK: - Empty State View
@@ -371,7 +467,7 @@ class InfoCenterRepository: ObservableObject {
     @Published var messages: [MessageOfDay] = []
     @Published var homework: [HomeWork] = []
     @Published var exams: [Exam] = []
-    @Published var absences: [String] = [] // Placeholder
+    @Published var absences: [AbsenceRecord] = []
 
     func loadMessages(for user: User) async throws {
         guard let credentials = keychainManager.loadUserCredentials(userId: String(user.id)) else {
@@ -410,17 +506,96 @@ class InfoCenterRepository: ObservableObject {
             throw lastError ?? InfoCenterError.missingCredentials
         }
 
-        let todayMessages = messageDicts.compactMap { dict -> MessageOfDay? in
-            guard let id = dict["id"] as? Int64 else { return nil }
+        let todayMessages = parseMessages(messageDicts)
+
+
+    func parseMessages(_ dicts: [[String: Any]]) -> [MessageOfDay] {
+        dicts.compactMap { dict in
+            guard let id = int64Value(dict["id"]) else { return nil }
+            let subject = stringValue(dict["subject"]) ?? stringValue(dict["title"])
+            let text = stringValue(dict["text"]) ?? stringValue(dict["message"]) ?? stringValue(dict["content"])
+            let isExpired = boolValue(dict["isExpired"]) ?? boolValue(dict["expired"])
+            let isImportant = boolValue(dict["isImportant"]) ?? boolValue(dict["priority"])
+            let attachmentsArray = dict["attachments"] as? [[String: Any]] ?? dict["files"] as? [[String: Any]] ?? []
+            let attachments = attachmentsArray.compactMap(parseMessageAttachment)
+
             return MessageOfDay(
                 id: id,
-                subject: dict["subject"] as? String,
-                text: dict["text"] as? String,
-                isExpired: dict["isExpired"] as? Bool,
-                isImportant: dict["isImportant"] as? Bool,
-                attachments: nil // TODO: Parse attachments
+                subject: subject,
+                text: text,
+                isExpired: isExpired,
+                isImportant: isImportant,
+                attachments: attachments.isEmpty ? nil : attachments
             )
         }
+    }
+
+    func parseHomework(_ dicts: [[String: Any]]) -> [HomeWork] {
+        dicts.compactMap { dict in
+            guard let id = intValue(dict["id"] ?? dict["homeworkId"]) else { return nil }
+            guard let startDate = dateValue(dict["date"] ?? dict["startDate"]) else { return nil }
+            guard let endDate = dateValue(dict["dueDate"] ?? dict["endDate"]) else { return nil }
+
+            let text = stringValue(dict["text"]) ?? stringValue(dict["title"]) ?? "Homework"
+            let remark = stringValue(dict["remark"] ?? dict["description"] ?? dict["details"])
+            let completed = boolValue(dict["completed"]) ?? boolValue(dict["done"]) ?? false
+            let lastUpdate = dateValue(dict["lastUpdate"] ?? dict["updatedAt"] ?? dict["lastChangeDate"])
+            let attachmentsArray = dict["attachments"] as? [[String: Any]] ?? dict["files"] as? [[String: Any]] ?? []
+            let attachments = attachmentsArray.compactMap(parseHomeworkAttachment)
+
+            return HomeWork(
+                id: id,
+                lessonId: intValue(dict["lessonId"]),
+                subjectId: intValue(dict["subjectId"]),
+                teacherId: intValue(dict["teacherId"]),
+                startDate: startDate,
+                endDate: endDate,
+                text: text,
+                remark: remark,
+                completed: completed,
+                attachments: attachments,
+                lastUpdate: lastUpdate
+            )
+        }
+    }
+
+    func parseExams(_ dicts: [[String: Any]]) -> [Exam] {
+        dicts.compactMap { dict in
+            guard let id = int64Value(dict["id"]) else { return nil }
+            guard let date = dateValue(dict["date"]) else { return nil }
+
+            let classes = parseExamClasses(from: dict["klassen"] ?? dict["classes"])
+            let teachers = parseExamTeachers(from: dict["teachers"])
+            let students = parseExamStudents(from: dict["students"])
+            let rooms = parseExamRooms(from: dict["rooms"])
+
+            let subject: String?
+            if let subjectDict = dict["subject"] as? [String: Any] {
+                subject = stringValue(subjectDict["displayName"]) ?? stringValue(subjectDict["name"]) ?? stringValue(subjectDict["longName"])
+            } else {
+                subject = stringValue(dict["subject"])
+            }
+
+            let text = stringValue(dict["text"]) ?? stringValue(dict["remark"])
+            let examType = stringValue(dict["examType"] ?? dict["type"])
+            let name = stringValue(dict["name"] ?? dict["title"])
+
+            return Exam(
+                id: id,
+                classes: classes,
+                teachers: teachers,
+                students: students,
+                subject: subject,
+                date: date,
+                startTime: formattedTimeString(from: dict["startTime"] ?? dict["start"]),
+                endTime: formattedTimeString(from: dict["endTime"] ?? dict["end"]),
+                rooms: rooms.isEmpty ? nil : rooms,
+                text: text,
+                examType: examType,
+                name: name
+            )
+        }
+    }
 
         await MainActor.run {
             self.messages = todayMessages
@@ -468,32 +643,7 @@ class InfoCenterRepository: ObservableObject {
             throw lastError ?? InfoCenterError.missingCredentials
         }
 
-        let homeworkList = hwDicts.compactMap { dict -> HomeWork? in
-            guard let id = dict["id"] as? Int,
-                  let text = dict["text"] as? String,
-                  let dateStr = dict["date"] as? String,
-                  let dueDateStr = dict["dueDate"] as? String else { return nil }
-
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyyMMdd"
-
-            guard let startDate = dateFormatter.date(from: dateStr),
-                  let endDate = dateFormatter.date(from: dueDateStr) else { return nil }
-
-            return HomeWork(
-                id: id,
-                lessonId: dict["lessonId"] as? Int,
-                subjectId: dict["subjectId"] as? Int,
-                teacherId: dict["teacherId"] as? Int,
-                startDate: startDate,
-                endDate: endDate,
-                text: text,
-                remark: dict["remark"] as? String,
-                completed: dict["completed"] as? Bool ?? false,
-                attachments: [],
-                lastUpdate: nil
-            )
-        }
+        let homeworkList = parseHomework(hwDicts)
 
         await MainActor.run {
             self.homework = homeworkList.sorted { $0.endDate < $1.endDate }
@@ -541,30 +691,7 @@ class InfoCenterRepository: ObservableObject {
             throw lastError ?? InfoCenterError.missingCredentials
         }
 
-        let examsList = examDicts.compactMap { dict -> Exam? in
-            guard let id = dict["id"] as? Int64,
-                  let dateStr = dict["date"] as? String else { return nil }
-
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyyMMdd"
-
-            guard let date = dateFormatter.date(from: dateStr) else { return nil }
-
-            return Exam(
-                id: id,
-                classes: [], // TODO: Parse classes array
-                teachers: [], // TODO: Parse teachers array
-                students: [], // TODO: Parse students array
-                subject: dict["subject"] as? String,
-                date: date,
-                startTime: dict["startTime"] as? String,
-                endTime: dict["endTime"] as? String,
-                rooms: [], // TODO: Parse rooms array
-                text: dict["text"] as? String,
-                examType: dict["examType"] as? String,
-                name: dict["name"] as? String
-            )
-        }
+        let examsList = parseExams(examDicts)
 
         await MainActor.run {
             self.exams = examsList.sorted { $0.date < $1.date }
@@ -572,11 +699,380 @@ class InfoCenterRepository: ObservableObject {
     }
 
     func loadAbsences(for user: User) async throws {
-        // Placeholder implementation
+        guard let credentials = keychainManager.loadUserCredentials(userId: String(user.id)) else {
+            throw InfoCenterError.missingCredentials
+        }
+
+        let apiUrls = try URLBuilder.buildApiUrlsWithFallback(
+            apiHost: user.apiHost,
+            schoolName: user.schoolName
+        )
+
+        let calendar = Calendar.current
+        let startDate = calendar.date(byAdding: .month, value: -6, to: Date()) ?? Date()
+        let endDate = calendar.date(byAdding: .day, value: 7, to: Date()) ?? Date()
+
+        var lastError: Error?
+        var absencesDicts: [[String: Any]]?
+
+        for apiUrl in apiUrls {
+            do {
+                print("🔄 Trying absences API URL: \(apiUrl)")
+                absencesDicts = try await apiClient.getStudentAbsences(
+                    apiUrl: apiUrl,
+                    startDate: startDate,
+                    endDate: endDate,
+                    user: credentials.user,
+                    key: credentials.key
+                )
+                print("✅ Absences loaded successfully with URL: \(apiUrl)")
+                break
+            } catch {
+                lastError = error
+                print("❌ Absences failed with URL \(apiUrl): \(error.localizedDescription)")
+                continue
+            }
+        }
+
+        guard let absenceDicts = absencesDicts else {
+            throw lastError ?? InfoCenterError.missingCredentials
+        }
+
+        let records = absenceDicts.compactMap(parseAbsenceRecord)
+
         await MainActor.run {
-            self.absences = []
+            self.absences = records.sorted { $0.startDateTime > $1.startDateTime }
         }
     }
+
+    // MARK: - Parsing Helpers
+
+    func parseAbsenceRecord(from dict: [String: Any]) -> AbsenceRecord? {
+        guard let id = int64Value(dict["id"]) ?? int64Value(dict["absenceId"]) else { return nil }
+
+        guard let startDate = dateValue(dict["startDate"] ?? dict["date"]),
+              let endDate = dateValue(dict["endDate"] ?? dict["date"]) else {
+            return nil
+        }
+
+        let startDateTime = combine(date: startDate, timeValue: dict["startTime"] ?? dict["from"])
+        let endDateTime = combine(date: endDate, timeValue: dict["endTime"] ?? dict["to"])
+
+        let excused = boolValue(dict["isExcused"]) ?? boolValue(dict["excused"])
+        let reason = stringValue(dict["reason"]) ?? stringValue(dict["absenceReason"]) ?? stringValue(dict["reasonText"])
+        let description = stringValue(dict["text"]) ?? stringValue(dict["longText"]) ?? stringValue(dict["remark"])
+
+        var className: String?
+        if let klasseDict = dict["klasse"] as? [String: Any] {
+            className = stringValue(klasseDict["displayName"]) ?? stringValue(klasseDict["name"])
+        } else if let klasseName = stringValue(dict["klasse"] ?? dict["class"]) {
+            className = klasseName
+        }
+
+        return AbsenceRecord(
+            id: id,
+            startDateTime: startDateTime,
+            endDateTime: endDateTime,
+            excused: excused,
+            reason: reason,
+            description: description,
+            className: className
+        )
+    }
+
+    func parseMessages(_ dicts: [[String: Any]]) -> [MessageOfDay] {
+        dicts.compactMap { dict in
+            guard let id = int64Value(dict["id"]) else { return nil }
+            let subject = stringValue(dict["subject"]) ?? stringValue(dict["title"])
+            let text = stringValue(dict["text"]) ?? stringValue(dict["message"]) ?? stringValue(dict["content"])
+            let isExpired = boolValue(dict["isExpired"]) ?? boolValue(dict["expired"])
+            let isImportant = boolValue(dict["isImportant"]) ?? boolValue(dict["priority"])
+            let attachmentsArray = dict["attachments"] as? [[String: Any]] ?? dict["files"] as? [[String: Any]] ?? []
+            let attachments = attachmentsArray.compactMap(parseMessageAttachment)
+
+            return MessageOfDay(
+                id: id,
+                subject: subject,
+                text: text,
+                isExpired: isExpired,
+                isImportant: isImportant,
+                attachments: attachments.isEmpty ? nil : attachments
+            )
+        }
+    }
+
+    func parseHomework(_ dicts: [[String: Any]]) -> [HomeWork] {
+        dicts.compactMap { dict in
+            guard let id = intValue(dict["id"] ?? dict["homeworkId"]) else { return nil }
+            guard let startDate = dateValue(dict["date"] ?? dict["startDate"]) else { return nil }
+            guard let endDate = dateValue(dict["dueDate"] ?? dict["endDate"]) else { return nil }
+
+            let text = stringValue(dict["text"]) ?? stringValue(dict["title"]) ?? "Homework"
+            let remark = stringValue(dict["remark"] ?? dict["description"] ?? dict["details"])
+            let completed = boolValue(dict["completed"]) ?? boolValue(dict["done"]) ?? false
+            let lastUpdate = dateValue(dict["lastUpdate"] ?? dict["updatedAt"] ?? dict["lastChangeDate"])
+            let attachmentsArray = dict["attachments"] as? [[String: Any]] ?? dict["files"] as? [[String: Any]] ?? []
+            let attachments = attachmentsArray.compactMap(parseHomeworkAttachment)
+
+            return HomeWork(
+                id: id,
+                lessonId: intValue(dict["lessonId"]),
+                subjectId: intValue(dict["subjectId"]),
+                teacherId: intValue(dict["teacherId"]),
+                startDate: startDate,
+                endDate: endDate,
+                text: text,
+                remark: remark,
+                completed: completed,
+                attachments: attachments,
+                lastUpdate: lastUpdate
+            )
+        }
+    }
+
+    func parseExams(_ dicts: [[String: Any]]) -> [Exam] {
+        dicts.compactMap { dict in
+            guard let id = int64Value(dict["id"]) else { return nil }
+            guard let date = dateValue(dict["date"]) else { return nil }
+
+            let classes = parseExamClasses(from: dict["klassen"] ?? dict["classes"])
+            let teachers = parseExamTeachers(from: dict["teachers"])
+            let students = parseExamStudents(from: dict["students"])
+            let rooms = parseExamRooms(from: dict["rooms"])
+
+            let subject: String?
+            if let subjectDict = dict["subject"] as? [String: Any] {
+                subject = stringValue(subjectDict["displayName"]) ?? stringValue(subjectDict["name"]) ?? stringValue(subjectDict["longName"])
+            } else {
+                subject = stringValue(dict["subject"])
+            }
+
+            let text = stringValue(dict["text"]) ?? stringValue(dict["remark"])
+            let examType = stringValue(dict["examType"] ?? dict["type"])
+            let name = stringValue(dict["name"] ?? dict["title"])
+
+            return Exam(
+                id: id,
+                classes: classes,
+                teachers: teachers,
+                students: students,
+                subject: subject,
+                date: date,
+                startTime: formattedTimeString(from: dict["startTime"] ?? dict["start"]),
+                endTime: formattedTimeString(from: dict["endTime"] ?? dict["end"]),
+                rooms: rooms.isEmpty ? nil : rooms,
+                text: text,
+                examType: examType,
+                name: name
+            )
+        }
+    }
+
+    func parseMessageAttachment(from dict: [String: Any]) -> MessageAttachment? {
+        guard let id = int64Value(dict["id"]) else { return nil }
+        let name = stringValue(dict["name"]) ?? "Attachment \(id)"
+        let url = stringValue(dict["url"]) ?? stringValue(dict["downloadUrl"]) ?? stringValue(dict["fileUrl"])
+        return MessageAttachment(id: id, name: name, url: url)
+    }
+
+    func parseHomeworkAttachment(from dict: [String: Any]) -> HomeworkAttachment? {
+        guard let id = intValue(dict["id"]) else { return nil }
+        let name = stringValue(dict["name"]) ?? "Attachment \(id)"
+        let url = stringValue(dict["url"]) ?? stringValue(dict["downloadUrl"]) ?? stringValue(dict["fileUrl"])
+        let fileSize = intValue(dict["fileSize"]) ?? intValue(dict["size"])
+        let mimeType = stringValue(dict["mimeType"]) ?? stringValue(dict["contentType"])
+        let uploadDate = dateValue(dict["uploadDate"])
+
+        return HomeworkAttachment(
+            id: id,
+            name: name,
+            url: url,
+            fileSize: fileSize,
+            mimeType: mimeType,
+            uploadDate: uploadDate
+        )
+    }
+
+    func parseExamClasses(from value: Any?) -> [ExamClass] {
+        guard let array = value as? [[String: Any]] else { return [] }
+        return array.compactMap { dict in
+            guard let id = int64Value(dict["id"]) else { return nil }
+            let name = stringValue(dict["name"]) ?? "Class \(id)"
+            let longName = stringValue(dict["longName"] ?? dict["longname"]) ?? name
+            return ExamClass(id: id, name: name, longName: longName)
+        }
+    }
+
+    func parseExamTeachers(from value: Any?) -> [ExamTeacher] {
+        guard let array = value as? [[String: Any]] else { return [] }
+        return array.compactMap { dict in
+            guard let id = int64Value(dict["id"]) else { return nil }
+            let name = stringValue(dict["name"]) ?? "Teacher \(id)"
+            let longName = stringValue(dict["longName"] ?? dict["longname"]) ?? name
+            return ExamTeacher(id: id, name: name, longName: longName)
+        }
+    }
+
+    func parseExamStudents(from value: Any?) -> [ExamStudent] {
+        guard let array = value as? [[String: Any]] else { return [] }
+        return array.compactMap { dict in
+            guard let id = int64Value(dict["id"]) else { return nil }
+            let key = stringValue(dict["key"]) ?? "#\(id)"
+            let name = stringValue(dict["name"]) ?? key
+            let foreName = stringValue(dict["foreName"] ?? dict["forename"]) ?? ""
+            let longName = stringValue(dict["longName"] ?? dict["longname"]) ?? name
+            return ExamStudent(id: id, key: key, name: name, foreName: foreName, longName: longName)
+        }
+    }
+
+    func parseExamRooms(from value: Any?) -> [ExamRoom] {
+        guard let array = value as? [[String: Any]] else { return [] }
+        return array.compactMap { dict in
+            guard let id = int64Value(dict["id"]) else { return nil }
+            let name = stringValue(dict["name"]) ?? "Room \(id)"
+            let longName = stringValue(dict["longName"] ?? dict["longname"]) ?? name
+            return ExamRoom(id: id, name: name, longName: longName)
+        }
+    }
+
+    func int64Value(_ value: Any?) -> Int64? {
+        if let int64 = value as? Int64 { return int64 }
+        if let intValue = value as? Int { return Int64(intValue) }
+        if let number = value as? NSNumber { return number.int64Value }
+        if let string = value as? String, let parsed = Int64(string.trimmingCharacters(in: .whitespacesAndNewlines)) {
+            return parsed
+        }
+        return nil
+    }
+
+    func intValue(_ value: Any?) -> Int? {
+        if let intValue = value as? Int { return intValue }
+        if let number = value as? NSNumber { return number.intValue }
+        if let string = value as? String, let parsed = Int(string.trimmingCharacters(in: .whitespacesAndNewlines)) {
+            return parsed
+        }
+        return nil
+    }
+
+    func boolValue(_ value: Any?) -> Bool? {
+        if let bool = value as? Bool { return bool }
+        if let number = value as? NSNumber { return number.boolValue }
+        if let string = value as? String {
+            let lower = string.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            if ["1", "true", "yes", "y"].contains(lower) { return true }
+            if ["0", "false", "no", "n"].contains(lower) { return false }
+        }
+        return nil
+    }
+
+    func stringValue(_ value: Any?) -> String? {
+        if let string = value as? String {
+            let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+            return trimmed.isEmpty ? nil : trimmed
+        }
+        if let number = value as? NSNumber {
+            return number.stringValue
+        }
+        return nil
+    }
+
+    func dateValue(_ value: Any?) -> Date? {
+        if let date = value as? Date { return date }
+
+        if let string = value as? String {
+            let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+            if let date = DateFormatter.untisDateTime.date(from: trimmed) {
+                return date
+            }
+            if let date = DateFormatter.untisDateTimeMinutes.date(from: trimmed) {
+                return date
+            }
+            if let date = DateFormatter.untisDate.date(from: trimmed) {
+                return date
+            }
+            if let isoDate = ISO8601DateFormatter().date(from: trimmed) {
+                return isoDate
+            }
+            if let digits = normalizedDateString(from: trimmed),
+               let hyphenated = hyphenatedDateString(from: digits),
+               let date = DateFormatter.untisDate.date(from: hyphenated) {
+                return date
+            }
+        }
+
+        if let number = value as? NSNumber {
+            let digits = String(format: "%08lld", number.int64Value)
+            if let hyphenated = hyphenatedDateString(from: digits) {
+                return DateFormatter.untisDate.date(from: hyphenated)
+            }
+        }
+        if let intValue = value as? Int {
+            let digits = String(format: "%08d", intValue)
+            if let hyphenated = hyphenatedDateString(from: digits) {
+                return DateFormatter.untisDate.date(from: hyphenated)
+            }
+        }
+
+        return nil
+    }
+
+    func combine(date: Date, timeValue: Any?) -> Date {
+        guard let timeString = normalizedTimeString(from: timeValue) else { return date }
+        let hour = Int(timeString.prefix(2)) ?? 0
+        let minute = Int(timeString.suffix(2)) ?? 0
+        return Calendar.current.date(bySettingHour: hour, minute: minute, second: 0, of: date) ?? date
+    }
+
+    func normalizedDateString(from value: Any?) -> String? {
+        if let string = value as? String {
+            let digits = string.filter { $0.isNumber }
+            guard !digits.isEmpty else { return nil }
+            if digits.count == 8 { return digits }
+            if let parsed = Int64(digits) {
+                return String(format: "%08lld", parsed)
+            }
+        }
+        if let number = value as? NSNumber {
+            return String(format: "%08lld", number.int64Value)
+        }
+        if let intValue = value as? Int {
+            return String(format: "%08d", intValue)
+        }
+        return nil
+    }
+
+    func hyphenatedDateString(from digits: String) -> String? {
+        guard digits.count == 8 else { return nil }
+        let year = digits.prefix(4)
+        let month = digits.dropFirst(4).prefix(2)
+        let day = digits.suffix(2)
+        return "\(year)-\(month)-\(day)"
+    }
+
+    func normalizedTimeString(from value: Any?) -> String? {
+        if let string = value as? String {
+            let digits = string.filter { $0.isNumber }
+            guard !digits.isEmpty else { return nil }
+            if let parsed = Int(digits) {
+                return String(format: "%04d", parsed)
+            }
+        }
+        if let number = value as? NSNumber {
+            return String(format: "%04d", number.intValue)
+        }
+        if let intValue = value as? Int {
+            return String(format: "%04d", intValue)
+        }
+        return nil
+    }
+
+    func formattedTimeString(from value: Any?) -> String? {
+        guard let normalized = normalizedTimeString(from: value) else { return nil }
+        let hours = normalized.prefix(2)
+        let minutes = normalized.suffix(2)
+        return "\(String(hours)):\(String(minutes))"
+    }
+
 
 }
 

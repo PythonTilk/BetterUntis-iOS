@@ -1,5 +1,8 @@
 import SwiftUI
 import CoreData
+#if canImport(UIKit)
+import UIKit
+#endif
 
 @main
 struct BetterUntisApp: App {

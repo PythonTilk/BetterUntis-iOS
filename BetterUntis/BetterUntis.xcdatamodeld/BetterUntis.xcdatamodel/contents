@@ -6,12 +6,27 @@
         <attribute name="foreColor" optional="YES" attributeType="String"/>
         <attribute name="id" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="infoText" optional="YES" attributeType="String"/>
+        <attribute name="periodData" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
         <attribute name="innerBackColor" optional="YES" attributeType="String"/>
         <attribute name="innerForeColor" optional="YES" attributeType="String"/>
         <attribute name="lessonId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="lessonText" optional="YES" attributeType="String"/>
         <attribute name="startDateTime" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="substitutionText" optional="YES" attributeType="String"/>
+        <attribute name="userId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+    </entity>
+    <entity name="MasterDataEntity" representedClassName="MasterDataEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="alternateName" optional="YES" attributeType="String"/>
+        <attribute name="building" optional="YES" attributeType="String"/>
+        <attribute name="backColor" optional="YES" attributeType="String"/>
+        <attribute name="active" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="canViewTimetable" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="displayName" optional="YES" attributeType="String"/>
+        <attribute name="foreColor" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="longName" optional="YES" attributeType="String"/>
+        <attribute name="name" optional="NO" attributeType="String"/>
+        <attribute name="type" optional="NO" attributeType="String"/>
         <attribute name="userId" optional="NO" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
     </entity>
     <entity name="UserEntity" representedClassName="UserEntity" syncable="YES" codeGenerationType="category">
