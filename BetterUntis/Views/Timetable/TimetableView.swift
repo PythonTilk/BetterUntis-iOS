@@ -12,12 +12,7 @@ struct TimetableView: View {
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
     @State private var showingDatePicker: Bool = false
-
-    private var currentWeekFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return formatter
-    }
+    @State private var showingSelectionSheet: Bool = false
 
     private var weekRangeFormatter: DateFormatter {
         let formatter = DateFormatter()
@@ -28,8 +23,8 @@ struct TimetableView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // Week navigation header
-                weekNavigationHeader
+                // Compressed header
+                compressedHeader
 
                 // Main content
                 Group {
@@ -52,26 +47,7 @@ struct TimetableView: View {
                     errorView(errorMessage)
                 }
             }
-            .navigationTitle("Timetable")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Today") {
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            currentWeekStartDate = Calendar.current.startOfWeek(for: Date())
-                        }
-                        loadTimetableForCurrentWeek()
-                    }
-                    .font(.caption)
-                }
-
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { loadTimetableForCurrentWeek(forceRefresh: true) }) {
-                        Image(systemName: "arrow.clockwise")
-                    }
-                    .disabled(isLoading)
-                }
-            }
+            .navigationBarHidden(true)
             .sheet(isPresented: $showingDatePicker) {
                 DatePickerView(
                     selectedDate: currentWeekStartDate,
@@ -81,12 +57,196 @@ struct TimetableView: View {
                     }
                 )
             }
+            .sheet(isPresented: $showingSelectionSheet) {
+                SelectionListView(
+                    selections: timetableRepository.availableSelections,
+                    currentSelection: timetableRepository.currentSelection,
+                    onSelect: { selection in
+                        showingSelectionSheet = false
+                        selectTimetable(selection)
+                    }
+                )
+            }
         }
         .onAppear {
             loadTimetableForCurrentWeek()
         }
-        .onChange(of: userRepository.currentUser) { newUser in
+        .onChange(of: userRepository.currentUser) { _, _ in
             loadTimetableForCurrentWeek()
+        }
+    }
+
+    // MARK: - Compressed Header
+    private var compressedHeader: some View {
+        VStack(spacing: 0) {
+            // Main header row
+            HStack(spacing: 8) {
+                // Timetable title and selection
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Timetable")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .textCase(.uppercase)
+
+                    if let selection = timetableRepository.currentSelection {
+                        Text(selection.displayName)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.primary)
+                            .lineLimit(1)
+                    } else {
+                        Text("Select timetable")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.primary)
+                    }
+                }
+
+                Spacer()
+
+                // Week navigation
+                HStack(spacing: 12) {
+                    Button(action: previousWeek) {
+                        Image(systemName: "chevron.left")
+                            .font(.body)
+                            .foregroundColor(.blue)
+                    }
+
+                    Button(action: { showingDatePicker = true }) {
+                        Text(weekRangeString)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.primary)
+                    }
+
+                    Button(action: nextWeek) {
+                        Image(systemName: "chevron.right")
+                            .font(.body)
+                            .foregroundColor(.blue)
+                    }
+                }
+
+                // Actions
+                HStack(spacing: 8) {
+                    if !timetableRepository.availableSelections.isEmpty {
+                        Menu {
+                            ForEach(timetableRepository.availableSelections) { selection in
+                                Button(action: { selectTimetable(selection) }) {
+                                    Label(selection.displayName, systemImage: selection.isPersonal ? "person.crop.circle" : iconName(for: selection.kind))
+                                }
+                            }
+
+                            Button(action: { showingSelectionSheet = true }) {
+                                Label("Browse all", systemImage: "list.bullet")
+                            }
+                        } label: {
+                            Image(systemName: "list.bullet.circle")
+                                .font(.body)
+                                .foregroundColor(.blue)
+                        }
+                    }
+
+                    Button("Today") {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            currentWeekStartDate = Calendar.current.startOfWeek(for: Date())
+                        }
+                        loadTimetableForCurrentWeek()
+                    }
+                    .font(.caption)
+                    .foregroundColor(.blue)
+
+                    Button(action: { loadTimetableForCurrentWeek(forceRefresh: true) }) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.body)
+                            .foregroundColor(.blue)
+                    }
+                    .disabled(isLoading)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+        }
+        .background(Color(UIColor.systemBackground))
+        .overlay(
+            Rectangle()
+                .frame(height: 0.5)
+                .foregroundColor(.gray.opacity(0.2)),
+            alignment: .bottom
+        )
+    }
+
+    // MARK: - Selection Header
+    private var selectionHeader: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Timetable")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                if let selection = timetableRepository.currentSelection {
+                    Text(selection.displayName)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+
+                    if let detail = selection.detail, !detail.isEmpty {
+                        Text(detail)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                } else {
+                    Text("Select a timetable")
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                }
+            }
+
+            Spacer()
+
+            Menu {
+                ForEach(timetableRepository.availableSelections) { selection in
+                    Button(action: { selectTimetable(selection) }) {
+                        Label(selection.displayName, systemImage: selection.isPersonal ? "person.crop.circle" : iconName(for: selection.kind))
+                            .labelStyle(.titleAndIcon)
+                    }
+                }
+
+                Button(action: { showingSelectionSheet = true }) {
+                    Label("Browse all", systemImage: "list.bullet")
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Text("Change")
+                        .font(.subheadline)
+                    Image(systemName: "chevron.down")
+                        .font(.caption)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(Color(UIColor.secondarySystemBackground))
+                .cornerRadius(8)
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(Color(UIColor.systemBackground))
+        .overlay(
+            Rectangle()
+                .frame(height: 0.5)
+                .foregroundColor(.gray.opacity(0.15)),
+            alignment: .bottom
+        )
+    }
+
+    private func iconName(for kind: TimetableSelection.Kind) -> String {
+        switch kind {
+        case .myTimetable, .student:
+            return "person.crop.circle"
+        case .klasse:
+            return "person.3"
+        case .teacher:
+            return "person.fill"
+        case .room:
+            return "building.2"
         }
     }
 
@@ -230,6 +390,12 @@ struct TimetableView: View {
         loadTimetableForCurrentWeek()
     }
 
+    private func selectTimetable(_ selection: TimetableSelection) {
+        guard timetableRepository.currentSelection?.id != selection.id else { return }
+        timetableRepository.currentSelection = selection
+        loadTimetableForCurrentWeek(forceRefresh: true)
+    }
+
     private func loadTimetableForCurrentWeek(forceRefresh: Bool = false) {
         guard let user = userRepository.currentUser else {
             errorMessage = "No user selected"
@@ -261,6 +427,60 @@ struct TimetableView: View {
                 await MainActor.run {
                     isLoading = false
                     errorMessage = "Failed to load timetable: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Selection List Sheet
+private struct SelectionListView: View {
+    let selections: [TimetableSelection]
+    let currentSelection: TimetableSelection?
+    let onSelect: (TimetableSelection) -> Void
+
+    @Environment(\.presentationMode) private var presentationMode
+
+    var body: some View {
+        NavigationView {
+            List(selections) { selection in
+                Button(action: {
+                    onSelect(selection)
+                    presentationMode.wrappedValue.dismiss()
+                }) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(selection.displayName)
+                                .font(.headline)
+                                .foregroundColor(.primary)
+
+                            if let detail = selection.detail, !detail.isEmpty {
+                                Text(detail)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+
+                        Spacer()
+
+                        if selection.id == currentSelection?.id {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    .padding(.vertical, 6)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+            .listStyle(.insetGrouped)
+            .navigationTitle("Timetables")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") {
+                        presentationMode.wrappedValue.dismiss()
+                    }
                 }
             }
         }

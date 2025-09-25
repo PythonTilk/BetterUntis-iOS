@@ -58,11 +58,11 @@ class HybridUntisService: ObservableObject {
     init(
         baseURL: String,
         schoolName: String,
-        restClient: UntisRESTClient? = nil,
-        jsonrpcClient: UntisAPIClient = UntisAPIClient(),
-        keychain: KeychainManager = KeychainManager.shared
+        restClient: UntisRESTClient,
+        jsonrpcClient: UntisAPIClient,
+        keychain: KeychainManager
     ) {
-        self.restClient = restClient ?? UntisRESTClient.create(for: baseURL, schoolName: schoolName)
+        self.restClient = restClient
         self.jsonrpcClient = jsonrpcClient
         self.keychain = keychain
         self.serverURL = baseURL
@@ -70,6 +70,19 @@ class HybridUntisService: ObservableObject {
 
         // Load cached capabilities
         loadServerCapabilities(for: "\(baseURL)_\(schoolName)")
+    }
+
+    convenience init(
+        baseURL: String,
+        schoolName: String
+    ) {
+        self.init(
+            baseURL: baseURL,
+            schoolName: schoolName,
+            restClient: UntisRESTClient.create(for: baseURL, schoolName: schoolName),
+            jsonrpcClient: UntisAPIClient(),
+            keychain: KeychainManager.shared
+        )
     }
 
     // MARK: - Authentication
@@ -122,7 +135,7 @@ class HybridUntisService: ObservableObject {
 
                 case .html:
                     if enableHTMLParsing && serverCapabilities?.supportsHTMLParsing == true {
-                        try await ensureHTMLSession(username: username, password: password)
+                        _ = try await ensureHTMLSession(username: username, password: password)
                         isAuthenticated = true
                         currentAuthMethod = .html
                         print("✅ Authenticated via HTML parser fallback")
@@ -203,6 +216,13 @@ class HybridUntisService: ObservableObject {
                 return periods
             } catch {
                 print("⚠️ REST timetable failed, attempting other fallbacks: \(error.localizedDescription)")
+
+                // Check if authentication expired
+                if let apiError = error as? UntisAPIError, apiError.code == 401 {
+                    isAuthenticated = false
+                    currentAuthMethod = .none
+                }
+
                 lastError = error
             }
         }
@@ -468,7 +488,7 @@ class HybridUntisService: ObservableObject {
     private func saveServerCapabilities(for key: String, capabilities: ServerCapabilities) {
         do {
             let data = try JSONEncoder().encode(capabilities)
-            keychain.save(string: String(data: data, encoding: .utf8) ?? "", forKey: "capabilities_\(key)")
+            _ = keychain.save(string: String(data: data, encoding: .utf8) ?? "", forKey: "capabilities_\(key)")
             print("💾 Saved server capabilities for \(key)")
         } catch {
             print("❌ Failed to save capabilities: \(error)")
@@ -520,7 +540,6 @@ class HybridUntisService: ObservableObject {
     }
 
     private func convertHTMLPeriods(_ periods: [HTMLParsedPeriod]) -> [Period] {
-        let calendar = Calendar.current
         return periods.compactMap { htmlPeriod in
             let identifier = Int64(abs(htmlPeriod.id.hashValue))
             let start = TimetableTransformer.combine(date: htmlPeriod.date, time: htmlPeriod.startTime)
@@ -581,8 +600,8 @@ class HybridUntisService: ObservableObject {
 
     private func convertHTMLAbsences(_ absences: [HTMLParsedAbsence]) -> [StudentAbsence] {
         return absences.enumerated().map { index, absence in
-            let start = TimetableTransformer.combine(date: absence.startDate, time: absence.startTime) ?? absence.startDate
-            let end = TimetableTransformer.combine(date: absence.endDate, time: absence.endTime) ?? absence.endDate
+            let start = TimetableTransformer.combine(date: absence.startDate, time: absence.startTime)
+            let end = TimetableTransformer.combine(date: absence.endDate, time: absence.endTime)
             return StudentAbsence(
                 id: index,
                 studentId: 0,
@@ -797,7 +816,6 @@ private enum TimetableTransformer {
 
         let subjectName = firstName(in: dict["su"], defaultPrefix: "Subject")
         let teacherName = firstName(in: dict["te"], defaultPrefix: "Teacher")
-        let roomName = firstName(in: dict["ro"], defaultPrefix: "Room")
         let className = firstName(in: dict["kl"], defaultPrefix: "Class")
 
         var elements: [PeriodElement] = []
