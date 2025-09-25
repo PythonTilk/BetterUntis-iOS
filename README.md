@@ -143,6 +143,8 @@ This ensures compatibility with servers from different WebUntis versions dating 
 - **QR Code Implementation**: Full QR code scanning with camera permissions and error handling
 - **Robust Error Handling**: Comprehensive fallback mechanisms for network failures
 - **Memory Management**: Optimized Core Data operations and reduced memory footprint
+- **Offline Master Data Cache**: Timetable refreshes now persist rooms, teachers, subjects, and classes, keeping names available even when offline. Cached entries merge with fresh master data transparently.
+- **Info Center Normalisation**: Messages, homework, exams, and absences are harmonised across legacy payloads, preserving attachments, status flags, and mixed date formats.
 
 ### Troubleshooting
 

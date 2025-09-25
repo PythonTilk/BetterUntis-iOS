@@ -24,7 +24,19 @@ class HTMLSessionManager {
 
     /// Check if currently authenticated
     var isAuthenticated: Bool {
-        return sessionCookie != nil && !cookies.isEmpty
+        return sessionCookie != nil && !cookies.isEmpty && !isSessionExpired
+    }
+
+    /// Check if session has likely expired based on response patterns
+    private var isSessionExpired: Bool {
+        // Check if any cookies have expired
+        let now = Date()
+        return cookies.contains { cookie in
+            if let expiryDate = cookie.expiresDate {
+                return expiryDate < now
+            }
+            return false
+        }
     }
 
     /// Login to WebUntis web interface
@@ -87,6 +99,72 @@ class HTMLSessionManager {
         }
 
         throw WebUntisHTMLParserError.pageNotFound("absence page")
+    }
+
+    /// Fetch JSON absence data from the WebUntis class register API
+    func fetchClassregAbsences(
+        studentId: Int64,
+        startDate: Date,
+        endDate: Date
+    ) async throws -> ClassregAbsenceData? {
+        guard isAuthenticated else {
+            throw WebUntisHTMLParserError.sessionExpired
+        }
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMMdd"
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+
+        var components = URLComponents(string: "\(serverURL)/WebUntis/api/classreg/absences/students")
+        components?.queryItems = [
+            URLQueryItem(name: "startDate", value: formatter.string(from: startDate)),
+            URLQueryItem(name: "endDate", value: formatter.string(from: endDate)),
+            URLQueryItem(name: "studentId", value: String(studentId)),
+            URLQueryItem(name: "excuseStatusId", value: "-1")
+        ]
+
+        guard let url = components?.url else {
+            throw WebUntisHTMLParserError.networkError("Invalid classreg absences URL")
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("de-DE,de;q=0.8,en;q=0.6", forHTTPHeaderField: "Accept-Language")
+
+        // Attach cookies
+        if !cookies.isEmpty {
+            let cookieHeader = HTTPCookie.requestHeaderFields(with: cookies)
+            for (key, value) in cookieHeader {
+                request.setValue(value, forHTTPHeaderField: key)
+            }
+        }
+
+        let (data, response) = try await urlSession.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw WebUntisHTMLParserError.networkError("Invalid response")
+        }
+
+        guard httpResponse.statusCode == 200 else {
+            if httpResponse.statusCode == 302 {
+                throw WebUntisHTMLParserError.sessionExpired
+            }
+            throw WebUntisHTMLParserError.networkError("Classreg absences request failed with status \(httpResponse.statusCode)")
+        }
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .millisecondsSince1970
+
+        let responseModel = try decoder.decode(ClassregAbsenceResponse.self, from: data)
+
+        if let state = responseModel.state, state.uppercased() == "NO_MANDANT" {
+            print("⚠️ Web absences endpoint returned NO_MANDANT state")
+            return nil
+        }
+
+        return responseModel.data
     }
 
     /// Fetch exam page HTML
@@ -214,6 +292,14 @@ class HTMLSessionManager {
 
         guard let html = String(data: data, encoding: .utf8) else {
             throw WebUntisHTMLParserError.networkError("Could not decode HTML response")
+        }
+
+        // Check for session expiration indicators in response
+        if html.contains("login") && html.contains("password") && html.contains("j_security_check") {
+            // Clear expired session data
+            sessionCookie = nil
+            cookies.removeAll()
+            throw WebUntisHTMLParserError.sessionExpired
         }
 
         return html

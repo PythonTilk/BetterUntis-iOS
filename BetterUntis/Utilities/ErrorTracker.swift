@@ -1,5 +1,8 @@
 import Foundation
 import os.log
+#if canImport(Darwin)
+import Darwin
+#endif
 
 /// Error tracking and crash reporting system for debugging
 class ErrorTracker {

@@ -17,6 +17,10 @@ class UntisRESTClient: ObservableObject {
     @Published var authToken: String?
     @Published var lastError: Error?
 
+    private var refreshToken: String?
+    private var tokenExpiryDate: Date?
+    private var isRefreshing = false
+
     private let jsonEncoder: JSONEncoder = {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .custom { date, encoder in
@@ -64,8 +68,8 @@ class UntisRESTClient: ObservableObject {
         baseURL: String,
         schoolName: String,
         tokenIdentifier: String? = nil,
-        keychain: KeychainManager = KeychainManager.shared,
-        session: URLSession = .shared
+        keychain: KeychainManager,
+        session: URLSession
     ) {
         self.session = session
         self.keychain = keychain
@@ -115,8 +119,8 @@ class UntisRESTClient: ObservableObject {
 
             let authResponse = try jsonDecoder.decode(AuthResponse.self, from: data)
 
-            // Store token securely
-            await storeToken(authResponse.accessToken)
+            // Store token and refresh token securely
+            await storeAuthResponse(authResponse)
 
             print("✅ REST Authentication successful")
             return authResponse
@@ -148,9 +152,46 @@ class UntisRESTClient: ObservableObject {
         }
 
         let authResponse = try jsonDecoder.decode(AuthResponse.self, from: data)
-        await storeToken(authResponse.accessToken)
+        await storeAuthResponse(authResponse)
 
         return authResponse
+    }
+
+    // MARK: - Token Management
+
+    /// Ensures we have a valid token, refreshing if necessary
+    private func ensureValidToken() async throws {
+        try await ensureValidToken()
+        guard let token = authToken else {
+            throw UntisAPIError(code: 401, message: "Not authenticated", details: "No auth token available", timestamp: Date())
+        }
+
+        // Check if token is expired or will expire soon (within 5 minutes)
+        if let expiryDate = tokenExpiryDate, expiryDate.timeIntervalSinceNow < 300 {
+            try await refreshTokenIfPossible()
+        }
+    }
+
+    /// Attempts to refresh the token if refresh token is available
+    private func refreshTokenIfPossible() async throws {
+        guard !isRefreshing else { return } // Prevent concurrent refresh attempts
+
+        guard let refreshToken = refreshToken else {
+            throw UntisAPIError(code: 401, message: "Token expired", details: "No refresh token available", timestamp: Date())
+        }
+
+        isRefreshing = true
+        defer { isRefreshing = false }
+
+        do {
+            let refreshResponse = try await refreshToken(refreshToken)
+            print("🔄 Token refreshed successfully")
+        } catch {
+            // If refresh fails, clear tokens and require re-authentication
+            print("❌ Token refresh failed: \(error)")
+            clearToken()
+            throw UntisAPIError(code: 401, message: "Authentication expired", details: "Please log in again", timestamp: Date())
+        }
     }
 
     // MARK: - Timetable API
@@ -165,6 +206,7 @@ class UntisRESTClient: ObservableObject {
         offset: Int = 0
     ) async throws -> TimetableResponse {
 
+        try await ensureValidToken()
         guard let token = authToken else {
             throw UntisAPIError(code: 401, message: "Not authenticated", details: "No auth token available", timestamp: Date())
         }
@@ -243,6 +285,7 @@ class UntisRESTClient: ObservableObject {
         layout: RESTTimetableLayout = .priority
     ) async throws -> TimetableEntriesResponse {
 
+        try await ensureValidToken()
         guard let token = authToken else {
             throw UntisAPIError(code: 401, message: "Not authenticated", details: "No auth token available", timestamp: Date())
         }
@@ -320,6 +363,7 @@ class UntisRESTClient: ObservableObject {
         cacheMode: RESTCacheMode = .noCache
     ) async throws -> CalendarPeriodRoomResponse {
 
+        try await ensureValidToken()
         guard let token = authToken else {
             throw UntisAPIError(code: 401, message: "Not authenticated", details: "No auth token available", timestamp: Date())
         }
@@ -372,6 +416,7 @@ class UntisRESTClient: ObservableObject {
 
     /// Fetch student absences via the SAA REST API
     func getStudentAbsences(request payload: SaaDataRequest) async throws -> SaaDataResponse {
+        try await ensureValidToken()
         guard let token = authToken else {
             throw UntisAPIError(code: 401, message: "Not authenticated", details: "No auth token available", timestamp: Date())
         }
@@ -438,32 +483,65 @@ class UntisRESTClient: ObservableObject {
         return json ?? [:]
     }
 
-    // MARK: - Token Management
+    // MARK: - Token Storage
 
     private func loadStoredToken() {
-        guard let token = keychain.loadString(forKey: tokenStorageKey) else {
+        guard let tokenData = keychain.loadString(forKey: tokenStorageKey),
+              let data = tokenData.data(using: .utf8) else {
             authToken = nil
+            refreshToken = nil
+            tokenExpiryDate = nil
             isAuthenticated = false
             return
         }
 
-        authToken = token
-        isAuthenticated = true
-        print("🔑 Loaded stored REST token for scope: \(tokenIdentifier)")
+        do {
+            let storedTokens = try JSONDecoder().decode(StoredTokens.self, from: data)
+            authToken = storedTokens.accessToken
+            refreshToken = storedTokens.refreshToken
+            tokenExpiryDate = storedTokens.expiryDate
+            isAuthenticated = true
+            print("🔑 Loaded stored REST tokens for scope: \(tokenIdentifier)")
+        } catch {
+            print("❌ Failed to decode stored tokens: \(error)")
+            clearToken()
+        }
     }
 
-    private func storeToken(_ token: String) async {
-        authToken = token
+    private func storeAuthResponse(_ response: AuthResponse) async {
+        authToken = response.accessToken
+        refreshToken = response.refreshToken
         isAuthenticated = true
-        keychain.save(string: token, forKey: tokenStorageKey)
-        print("🔑 Stored REST token for scope: \(tokenIdentifier)")
+
+        // Calculate expiry date from expiresIn (seconds)
+        if let expiresIn = response.expiresIn {
+            tokenExpiryDate = Date().addingTimeInterval(TimeInterval(expiresIn))
+        }
+
+        let storedTokens = StoredTokens(
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken,
+            expiryDate: tokenExpiryDate
+        )
+
+        do {
+            let data = try JSONEncoder().encode(storedTokens)
+            if let tokenString = String(data: data, encoding: .utf8) {
+                _ = keychain.save(string: tokenString, forKey: tokenStorageKey)
+                print("🔑 Stored REST tokens for scope: \(tokenIdentifier)")
+            }
+        } catch {
+            print("❌ Failed to encode tokens for storage: \(error)")
+        }
     }
 
     func clearToken() {
         authToken = nil
+        refreshToken = nil
+        tokenExpiryDate = nil
         isAuthenticated = false
-        keychain.deleteString(forKey: tokenStorageKey)
-        print("🔑 Cleared REST token for scope: \(tokenIdentifier)")
+        _ = keychain.deleteString(forKey: tokenStorageKey)
+        print("🔑 Cleared REST tokens for scope: \(tokenIdentifier)")
     }
 
     func updateTokenScope(userIdentifier: String?) {
@@ -477,7 +555,7 @@ class UntisRESTClient: ObservableObject {
 
         let oldKey = tokenStorageKey
         tokenIdentifier = newIdentifier
-        keychain.deleteString(forKey: oldKey)
+        _ = keychain.deleteString(forKey: oldKey)
         loadStoredToken()
     }
 
@@ -653,6 +731,52 @@ class UntisRESTClient: ObservableObject {
             return nil
         }
 
+        func trimmed(_ string: String?) -> String? {
+            guard let string = string?.trimmingCharacters(in: .whitespacesAndNewlines), !string.isEmpty else {
+                return nil
+            }
+            return string
+        }
+
+        func isGenericLessonTitle(_ value: String) -> Bool {
+            let normalized = value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            return normalized.isEmpty || [
+                "lesson",
+                "unterricht",
+                "lektion",
+                "stunden"
+            ].contains(normalized)
+        }
+
+        func resolveLessonTitle(
+            for entry: TimetableGridEntry,
+            subjectName: String?,
+            teacherName: String?,
+            className: String?
+        ) -> String? {
+            let rawCandidates = [entry.name, entry.lessonText]
+
+            for candidate in rawCandidates {
+                if let value = trimmed(candidate), !isGenericLessonTitle(value) {
+                    return value
+                }
+            }
+
+            let fallbacks = [subjectName, teacherName, className]
+            for fallback in fallbacks {
+                if let value = trimmed(fallback), !isGenericLessonTitle(value) {
+                    return value
+                }
+            }
+
+            if let firstContent = entry.position2?.compactMap({ $0.current ?? $0.original }).compactMap({ trimmed($0.displayName ?? $0.shortName ?? $0.text ?? $0.longName) }).first,
+               !isGenericLessonTitle(firstContent) {
+                return firstContent
+            }
+
+            return nil
+        }
+
         func makeElements(from entry: TimetableGridEntry, baseElement: PeriodElement?) -> [PeriodElement] {
             var elements: [PeriodElement] = []
             var seen = Set<String>()
@@ -662,32 +786,59 @@ class UntisRESTClient: ObservableObject {
                 seen.insert("\(baseElement.type.rawValue)-\(baseElement.id)")
             }
 
-            let positionBuckets: [[TimetablePositionItem]?] = [entry.position1, entry.position2, entry.position3, entry.position4, entry.position5]
+            let positionBuckets: [[TimetablePositionItem]?] = [
+                entry.position1,
+                entry.position2,
+                entry.position3,
+                entry.position4,
+                entry.position5,
+                entry.position6,
+                entry.position7,
+                entry.position8,
+                entry.position9,
+                entry.position10
+            ]
 
             for bucket in positionBuckets {
                 guard let bucket else { continue }
                 for item in bucket {
                     guard let content = item.current ?? item.original,
                           let typeString = content.type,
-                          let type = ElementType(restType: typeString),
-                          let identifier = content.id else {
+                          let type = ElementType(restType: typeString) else {
                         continue
                     }
 
-                    let key = "\(type.rawValue)-\(identifier)"
+                    let fallbackName = [content.displayName, content.shortName, content.shortText, content.text, content.longName]
+                        .compactMap(trimmed)
+                        .first
+
+                    let rawIdentifier: Int
+                    if let explicitId = content.id {
+                        rawIdentifier = explicitId
+                    } else if let nameKey = fallbackName {
+                        rawIdentifier = abs(nameKey.hashValue)
+                    } else {
+                        rawIdentifier = Int.random(in: 1_000_000...9_999_999)
+                    }
+
+                    let key = "\(type.rawValue)-\(rawIdentifier)"
                     if seen.contains(key) { continue }
 
-                    let longName = content.text ?? content.shortText ?? "#\(identifier)"
-                    let name = content.shortText ?? content.text ?? longName
+                    let name = fallbackName ?? "#\(rawIdentifier)"
+                    let longName = [content.longName, content.displayName, content.text, content.shortName, content.shortText]
+                        .compactMap(trimmed)
+                        .first ?? name
 
                     elements.append(
                         PeriodElement(
                             type: type,
-                            id: Int64(identifier),
+                            id: Int64(rawIdentifier),
                             name: name,
                             longName: longName,
-                            displayName: content.text ?? longName,
-                            alternateName: content.shortText,
+                            displayName: fallbackName ?? longName,
+                            alternateName: [content.shortName, content.shortText]
+                                .compactMap(trimmed)
+                                .first,
                             backColor: content.backColor,
                             foreColor: content.foreColor,
                             canViewTimetable: nil
@@ -698,7 +849,7 @@ class UntisRESTClient: ObservableObject {
             }
 
             if elements.isEmpty, let baseElement {
-                elements.append(baseElement)
+                return [baseElement]
             }
 
             return elements
@@ -715,7 +866,6 @@ class UntisRESTClient: ObservableObject {
             default: return []
             }
         }
-
         func makePeriod(
             id: Int64,
             start: Date,
@@ -753,44 +903,69 @@ class UntisRESTClient: ObservableObject {
 
         let fallbackId = primaryResourceId
 
-        response.days.forEach { day in
-            let dayElement = makeElement(from: day.resource, restTypeString: day.resourceType, fallbackType: resourceType, fallbackId: fallbackId)
+        for day in response.days {
+            let dayElement = makeElement(
+                from: day.resource,
+                restTypeString: day.resourceType,
+                fallbackType: resourceType,
+                fallbackId: fallbackId
+            )
 
-            day.gridEntries.enumerated().forEach { index, entry in
-                guard let (start, end) = parseDuration(entry.duration) else { return }
+            for (index, entry) in day.gridEntries.enumerated() {
+                guard let (start, end) = parseDuration(entry.duration) else { continue }
 
                 let periodId = Int64(entry.ids?.first ?? Int(start.timeIntervalSince1970) + index)
                 let elements = makeElements(from: entry, baseElement: dayElement)
 
-                let periodText = PeriodText(
-                    lesson: entry.name,
-                    substitution: entry.statusDetail,
-                    info: entry.notesAll
-                )
+                    let subjectElement = elements.first { $0.type == .subject }
+                    let teacherElement = elements.first { $0.type == .teacher }
+                    let classElement = elements.first { $0.type == .klasse }
 
-                let period = makePeriod(
-                    id: periodId,
-                    start: start,
-                    end: end,
-                    text: periodText,
-                    elements: elements,
-                    status: entry.status,
-                    statusDetail: entry.statusDetail,
-                    color: entry.color,
-                    layoutGroup: entry.layoutGroup
-                )
+                    let subjectName = subjectElement?.displayName ?? subjectElement?.name
+                    let teacherName = teacherElement?.displayName ?? teacherElement?.name
+                    let className = classElement?.displayName ?? classElement?.name
+
+                    let lessonTitle = resolveLessonTitle(
+                        for: entry,
+                        subjectName: subjectName,
+                        teacherName: teacherName,
+                        className: className
+                    ) ?? elements.first(where: { $0.type != .student })?.displayName ?? elements.first(where: { $0.type != .student })?.name
+
+                    let periodText = PeriodText(
+                        lesson: lessonTitle,
+                        substitution: trimmed(entry.statusDetail),
+                        info: trimmed(entry.notesAll)
+                    )
+
+                    let period = makePeriod(
+                        id: periodId,
+                        start: start,
+                        end: end,
+                        text: periodText,
+                        elements: elements,
+                        status: entry.status,
+                        statusDetail: entry.statusDetail,
+                        color: entry.color,
+                        layoutGroup: entry.layoutGroup
+                    )
 
                 periods.append(period)
             }
 
-            day.dayEntries.enumerated().forEach { index, entry in
-                guard let (start, end) = parseDuration(entry.duration) else { return }
+            for (index, entry) in day.dayEntries.enumerated() {
+                guard let (start, end) = parseDuration(entry.duration) else { continue }
                 let periodId = Int64(entry.ids?.first ?? Int(start.timeIntervalSince1970) + index + 10_000)
 
+                let lessonTitle = [entry.name, entry.information?.title]
+                    .compactMap(trimmed)
+                    .first ?? "Lesson"
+                let infoText = trimmed(entry.notesAll) ?? trimmed(entry.information?.text)
+
                 let periodText = PeriodText(
-                    lesson: entry.name ?? entry.information?.title,
+                    lesson: lessonTitle,
                     substitution: entry.statusDetail ?? entry.information?.text,
-                    info: entry.notesAll ?? entry.information?.text
+                    info: infoText
                 )
 
                 let elements = dayElement.map { [$0] } ?? []
@@ -813,6 +988,58 @@ class UntisRESTClient: ObservableObject {
 
         return periods.sorted { $0.startDateTime < $1.startDateTime }
     }
+
+    /// Fetch timetable filter data for a given resource type (classes/teachers/rooms/students)
+    func getTimetableFilter(
+        resourceType: RESTElementType,
+        studentId: Int? = nil,
+        cacheMode: RESTCacheMode = .noCache
+    ) async throws -> TimetableFilterResponse {
+
+        try await ensureValidToken()
+        guard let token = authToken else {
+            throw UntisAPIError(code: 401, message: "Not authenticated", details: "No auth token available", timestamp: Date())
+        }
+
+        var components = URLComponents(string: baseURL + "/WebUntis/api/rest/view/v1/timetable/filter")!
+        var queryItems: [URLQueryItem] = [
+            URLQueryItem(name: "resourceType", value: resourceType.rawValue)
+        ]
+
+        if let studentId {
+            queryItems.append(URLQueryItem(name: "studentId", value: String(studentId)))
+        }
+
+        components.queryItems = queryItems
+
+        guard let url = components.url else {
+            throw UntisAPIError(code: 400, message: "Failed to build timetable filter URL", details: nil, timestamp: Date())
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(cacheMode.rawValue, forHTTPHeaderField: "Cache-Mode")
+        request.setValue(cacheMode.cacheControlValue, forHTTPHeaderField: "Cache-Control")
+
+        let (data, response) = try await session.data(for: request)
+
+        if let httpResponse = response as? HTTPURLResponse {
+            guard httpResponse.statusCode == 200 else {
+                if httpResponse.statusCode == 403 {
+                    throw UntisAPIError(code: httpResponse.statusCode, message: "Not authorized to access timetable filter for \(resourceType.rawValue)", details: nil, timestamp: Date())
+                }
+
+                if let errorData = try? jsonDecoder.decode(UntisAPIError.self, from: data) {
+                    throw errorData
+                }
+                throw UntisAPIError(code: httpResponse.statusCode, message: "Timetable filter request failed", details: nil, timestamp: Date())
+            }
+        }
+
+        return try jsonDecoder.decode(TimetableFilterResponse.self, from: data)
+    }
 }
 
 // MARK: - Extensions
@@ -830,6 +1057,7 @@ extension UntisRESTClient {
             baseURL: normalizedBase,
             schoolName: schoolName,
             tokenIdentifier: userIdentifier,
+            keychain: KeychainManager.shared,
             session: session
         )
     }
@@ -892,4 +1120,12 @@ extension UntisRESTClient {
         let sanitized = String(filtered).trimmingCharacters(in: CharacterSet(charactersIn: "_"))
         return sanitized.isEmpty ? "unknown" : sanitized
     }
+}
+
+// MARK: - Token Storage Model
+
+private struct StoredTokens: Codable {
+    let accessToken: String
+    let refreshToken: String?
+    let expiryDate: Date?
 }

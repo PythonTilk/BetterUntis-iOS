@@ -183,6 +183,12 @@ extension PersistenceController {
         infoTextAttribute.attributeType = .stringAttributeType
         infoTextAttribute.isOptional = true
 
+        let periodDataAttribute = NSAttributeDescription()
+        periodDataAttribute.name = "periodData"
+        periodDataAttribute.attributeType = .binaryDataAttributeType
+        periodDataAttribute.allowsExternalBinaryDataStorage = true
+        periodDataAttribute.isOptional = true
+
         let userIdForeignKey = NSAttributeDescription()
         userIdForeignKey.name = "userId"
         userIdForeignKey.attributeType = .integer64AttributeType
@@ -200,10 +206,91 @@ extension PersistenceController {
             lessonTextAttribute,
             substitutionTextAttribute,
             infoTextAttribute,
+            periodDataAttribute,
             userIdForeignKey
         ]
 
-        model.entities = [userEntity, periodEntity]
+        // Master Data Entity (generic storage for rooms, teachers, subjects, classes)
+        let masterDataEntity = NSEntityDescription()
+        masterDataEntity.name = "MasterDataEntity"
+        masterDataEntity.managedObjectClassName = "MasterDataEntity"
+
+        let masterIdAttribute = NSAttributeDescription()
+        masterIdAttribute.name = "id"
+        masterIdAttribute.attributeType = .integer64AttributeType
+        masterIdAttribute.isOptional = false
+
+        let masterTypeAttribute = NSAttributeDescription()
+        masterTypeAttribute.name = "type"
+        masterTypeAttribute.attributeType = .stringAttributeType
+        masterTypeAttribute.isOptional = false
+
+        let masterNameAttribute = NSAttributeDescription()
+        masterNameAttribute.name = "name"
+        masterNameAttribute.attributeType = .stringAttributeType
+        masterNameAttribute.isOptional = false
+
+        let masterLongNameAttribute = NSAttributeDescription()
+        masterLongNameAttribute.name = "longName"
+        masterLongNameAttribute.attributeType = .stringAttributeType
+        masterLongNameAttribute.isOptional = true
+
+        let masterDisplayNameAttribute = NSAttributeDescription()
+        masterDisplayNameAttribute.name = "displayName"
+        masterDisplayNameAttribute.attributeType = .stringAttributeType
+        masterDisplayNameAttribute.isOptional = true
+
+        let masterAlternateNameAttribute = NSAttributeDescription()
+        masterAlternateNameAttribute.name = "alternateName"
+        masterAlternateNameAttribute.attributeType = .stringAttributeType
+        masterAlternateNameAttribute.isOptional = true
+
+        let masterBuildingAttribute = NSAttributeDescription()
+        masterBuildingAttribute.name = "building"
+        masterBuildingAttribute.attributeType = .stringAttributeType
+        masterBuildingAttribute.isOptional = true
+
+        let masterForeColorAttribute = NSAttributeDescription()
+        masterForeColorAttribute.name = "foreColor"
+        masterForeColorAttribute.attributeType = .stringAttributeType
+        masterForeColorAttribute.isOptional = true
+
+        let masterBackColorAttribute = NSAttributeDescription()
+        masterBackColorAttribute.name = "backColor"
+        masterBackColorAttribute.attributeType = .stringAttributeType
+        masterBackColorAttribute.isOptional = true
+
+        let masterActiveAttribute = NSAttributeDescription()
+        masterActiveAttribute.name = "active"
+        masterActiveAttribute.attributeType = .booleanAttributeType
+        masterActiveAttribute.isOptional = true
+
+        let masterCanViewAttribute = NSAttributeDescription()
+        masterCanViewAttribute.name = "canViewTimetable"
+        masterCanViewAttribute.attributeType = .booleanAttributeType
+        masterCanViewAttribute.isOptional = true
+
+        let masterUserIdAttribute = NSAttributeDescription()
+        masterUserIdAttribute.name = "userId"
+        masterUserIdAttribute.attributeType = .integer64AttributeType
+        masterUserIdAttribute.isOptional = false
+
+        masterDataEntity.properties = [
+            masterIdAttribute,
+            masterTypeAttribute,
+            masterNameAttribute,
+            masterLongNameAttribute,
+            masterDisplayNameAttribute,
+            masterAlternateNameAttribute,
+            masterBuildingAttribute,
+            masterForeColorAttribute,
+            masterBackColorAttribute,
+            masterActiveAttribute,
+            masterCanViewAttribute,
+            masterUserIdAttribute
+        ]
+
+        model.entities = [userEntity, periodEntity, masterDataEntity]
 
         return model
     }
